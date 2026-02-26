@@ -47,10 +47,10 @@ import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
 const CARD_STYLES = {
   container:
-    'w-12 h-12 rounded-2xl flex items-center justify-center relative shadow-md',
+    'market-premium-card__icon w-12 h-12 rounded-2xl flex items-center justify-center relative shadow-md',
   icon: 'w-8 h-8 flex items-center justify-center',
-  selected: 'border-blue-500 bg-blue-50',
-  default: 'border-gray-200 hover:border-gray-300',
+  selected: 'market-premium-card--selected',
+  default: 'market-premium-card--default',
 };
 
 const PricingCardView = ({
@@ -251,7 +251,7 @@ const PricingCardView = ({
           return (
             <Card
               key={modelKey || index}
-              className={`!rounded-2xl transition-all duration-200 hover:shadow-lg border cursor-pointer ${isSelected ? CARD_STYLES.selected : CARD_STYLES.default}`}
+              className={`market-premium-card !rounded-2xl transition-all duration-200 hover:shadow-lg border cursor-pointer ${isSelected ? CARD_STYLES.selected : CARD_STYLES.default}`}
               bodyStyle={{ height: '100%' }}
               onClick={() => openModelDetail && openModelDetail(model)}
             >
@@ -261,7 +261,7 @@ const PricingCardView = ({
                   <div className='flex items-start space-x-3 flex-1 min-w-0'>
                     {getModelIcon(model)}
                     <div className='flex-1 min-w-0'>
-                      <h3 className='text-lg font-bold text-gray-900 truncate'>
+                      <h3 className='market-premium-card__title text-lg font-bold text-gray-900 truncate'>
                         {model.model_name}
                       </h3>
                       <div className='flex items-center gap-3 text-xs mt-1'>
@@ -276,6 +276,7 @@ const PricingCardView = ({
                       size='small'
                       theme='outline'
                       type='tertiary'
+                      className='market-premium-copy-mini'
                       icon={<Copy size={12} />}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -315,14 +316,14 @@ const PricingCardView = ({
                   {showRatio && (
                     <div className='pt-3'>
                       <div className='flex items-center space-x-1 mb-2'>
-                        <span className='text-xs font-medium text-gray-700'>
+                        <span className='market-premium-card__ratio-title text-xs font-medium text-gray-700'>
                           {t('倍率信息')}
                         </span>
                         <Tooltip
                           content={t('倍率是为了方便换算不同价格的模型')}
                         >
                           <IconHelpCircle
-                            className='text-blue-500 cursor-pointer'
+                            className='text-gray-600 cursor-pointer'
                             size='small'
                             onClick={(e) => {
                               e.stopPropagation();
@@ -332,7 +333,7 @@ const PricingCardView = ({
                           />
                         </Tooltip>
                       </div>
-                      <div className='grid grid-cols-3 gap-2 text-xs text-gray-600'>
+                      <div className='market-premium-card__ratio-grid grid grid-cols-3 gap-2 text-xs text-gray-600'>
                         <div>
                           {t('模型')}:{' '}
                           {model.quota_type === 0 ? model.model_ratio : t('无')}

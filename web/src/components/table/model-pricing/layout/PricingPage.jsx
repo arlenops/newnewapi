@@ -24,6 +24,7 @@ import PricingContent from './content/PricingContent';
 import ModelDetailSideSheet from '../modal/ModelDetailSideSheet';
 import { useModelPricingData } from '../../../../hooks/model-pricing/useModelPricingData';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import './market.css';
 
 const PricingPage = () => {
   const pricingData = useModelPricingData();
@@ -40,15 +41,22 @@ const PricingPage = () => {
   };
 
   return (
-    <div className='bg-white'>
-      <Layout className='pricing-layout'>
+    <div className='market-premium'>
+      <div className='market-premium__aurora market-premium__aurora--blue' />
+      <div className='market-premium__aurora market-premium__aurora--mint' />
+      <div className='market-premium__aurora market-premium__aurora--violet' />
+      <div className='market-premium__dots' />
+
+      <Layout className='pricing-layout market-premium__layout'>
         {!isMobile && (
-          <Sider className='pricing-scroll-hide pricing-sidebar'>
-            <PricingSidebar {...allProps} />
+          <Sider className='pricing-scroll-hide pricing-sidebar market-premium__sidebar-shell'>
+            <div className='market-premium__sidebar-inner'>
+              <PricingSidebar {...allProps} />
+            </div>
           </Sider>
         )}
 
-        <Content className='pricing-scroll-hide pricing-content'>
+        <Content className='pricing-scroll-hide pricing-content market-premium__content-shell'>
           <PricingContent
             {...allProps}
             isMobile={isMobile}

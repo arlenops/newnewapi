@@ -143,6 +143,14 @@ function App() {
           }
         />
         <Route
+          path='/token'
+          element={
+            <PrivateRoute>
+              <Token />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path='/console/playground'
           element={
             <PrivateRoute>
@@ -255,6 +263,16 @@ function App() {
           }
         />
         <Route
+          path='/account'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <PersonalSetting />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path='/console/topup'
           element={
             <PrivateRoute>
@@ -265,7 +283,25 @@ function App() {
           }
         />
         <Route
+          path='/wallet'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TopUp />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path='/console/log'
+          element={
+            <PrivateRoute>
+              <Log />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/log'
           element={
             <PrivateRoute>
               <Log />
@@ -293,7 +329,27 @@ function App() {
           }
         />
         <Route
+          path='/midjourney'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Midjourney />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path='/console/task'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Task />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/task'
           element={
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>

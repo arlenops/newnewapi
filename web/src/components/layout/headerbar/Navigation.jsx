@@ -18,7 +18,9 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Dropdown } from '@douyinfe/semi-ui';
+import { IconChevronDown } from '@douyinfe/semi-icons';
 import SkeletonWrapper from '../components/SkeletonWrapper';
 
 const Navigation = ({
@@ -28,6 +30,21 @@ const Navigation = ({
   userState,
   pricingRequireAuth,
 }) => {
+  const navigate = useNavigate();
+
+  const resolveTargetPath = (item, parentItem = null) => {
+    const requiresAuth =
+      item?.requiresAuth === true || parentItem?.requiresAuth === true;
+    const pricingNeedsAuth =
+      (item?.itemKey === 'pricing' || parentItem?.itemKey === 'pricing') &&
+      pricingRequireAuth;
+    const needLogin = (requiresAuth || pricingNeedsAuth) && !userState.user;
+    if (needLogin) {
+      return '/login';
+    }
+    return item?.to;
+  };
+
   const renderNavLinks = () => {
     const baseClasses =
       'flex-shrink-0 flex items-center gap-1 font-semibold rounded-md transition-all duration-200 ease-in-out';
@@ -53,14 +70,61 @@ const Navigation = ({
         );
       }
 
-      let targetPath = link.to;
-      if (link.itemKey === 'console' && !userState.user) {
-        targetPath = '/login';
-      }
-      if (link.itemKey === 'pricing' && pricingRequireAuth && !userState.user) {
-        targetPath = '/login';
+      if (Array.isArray(link.children) && link.children.length > 0) {
+        return (
+          <Dropdown
+            key={link.itemKey}
+            trigger={isMobile ? 'click' : 'hover'}
+            position='bottom'
+            render={
+              <Dropdown.Menu>
+                {link.children.map((child) => {
+                  if (child.isExternal) {
+                    return (
+                      <Dropdown.Item
+                        key={child.itemKey || child.text}
+                        onClick={() => {
+                          window.open(
+                            child.externalLink,
+                            '_blank',
+                            'noopener,noreferrer',
+                          );
+                        }}
+                      >
+                        {child.text}
+                      </Dropdown.Item>
+                    );
+                  }
+
+                  const childTargetPath = resolveTargetPath(child, link);
+                  return (
+                    <Dropdown.Item
+                      key={child.itemKey || child.to || child.text}
+                      onClick={() => {
+                        if (childTargetPath) {
+                          navigate(childTargetPath);
+                        }
+                      }}
+                    >
+                      {child.text}
+                    </Dropdown.Item>
+                  );
+                })}
+              </Dropdown.Menu>
+            }
+          >
+            <button
+              type='button'
+              className={`${commonLinkClasses} !border-0 !bg-transparent`}
+            >
+              <span>{link.text}</span>
+              <IconChevronDown size='small' />
+            </button>
+          </Dropdown>
+        );
       }
 
+      const targetPath = resolveTargetPath(link);
       return (
         <Link key={link.itemKey} to={targetPath} className={commonLinkClasses}>
           {linkContent}
@@ -69,8 +133,12 @@ const Navigation = ({
     });
   };
 
+  const navContainerClasses = isMobile
+    ? 'flex flex-1 min-w-0 items-center gap-1 lg:gap-2 mx-2 md:mx-4 overflow-x-auto whitespace-nowrap scrollbar-hide'
+    : 'flex flex-1 min-w-0 items-center justify-center gap-1 lg:gap-2 mx-2 md:mx-4 overflow-x-auto whitespace-nowrap scrollbar-hide';
+
   return (
-    <nav className='flex flex-1 items-center gap-1 lg:gap-2 mx-2 md:mx-4 overflow-x-auto whitespace-nowrap scrollbar-hide'>
+    <nav className={navContainerClasses}>
       <SkeletonWrapper
         loading={isLoading}
         type='navigation'

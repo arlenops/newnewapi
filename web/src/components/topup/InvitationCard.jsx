@@ -26,24 +26,64 @@ import {
   Input,
   Badge,
   Space,
+  Table,
+  Empty,
 } from '@douyinfe/semi-ui';
-import { Copy, Users, BarChart2, TrendingUp, Gift, Zap } from 'lucide-react';
+import { Copy, Gift } from 'lucide-react';
 
 const { Text } = Typography;
 
 const InvitationCard = ({
   t,
-  userState,
-  renderQuota,
-  setOpenTransfer,
   affLink,
   handleAffLinkClick,
+  inviteeTopupItems,
+  inviteeTopupTotal,
+  inviteeTopupPage,
+  inviteeTopupPageSize,
+  inviteeTopupKeyword,
+  inviteeTopupLoading,
+  inviteeTopupTotalMoney,
+  setInviteeTopupPage,
+  setInviteeTopupPageSize,
+  setInviteeTopupKeyword,
 }) => {
+  const inviteeColumns = [
+    {
+      title: t('用户'),
+      dataIndex: 'display_name',
+      key: 'user',
+      render: (_, record) => (
+        <div className='flex flex-col'>
+          <Text>{record.display_name || record.username || '-'}</Text>
+          <Text type='tertiary' className='text-xs'>
+            @{record.username || '-'}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      title: t('支付金额'),
+      dataIndex: 'total_topup_money',
+      key: 'total_topup_money',
+      render: (money) => {
+        const amount = Number(money || 0);
+        return <Text className='wallet-premium__money'>¥{amount.toFixed(2)}</Text>;
+      },
+    },
+    {
+      title: t('请求次数'),
+      dataIndex: 'topup_count',
+      key: 'topup_count',
+      render: (count) => count || 0,
+    },
+  ];
+
   return (
-    <Card className='!rounded-2xl shadow-sm border-0'>
+    <Card className='wallet-premium__main-card !rounded-2xl shadow-sm border-0'>
       {/* 卡片头部 */}
       <div className='flex items-center mb-4'>
-        <Avatar size='small' color='green' className='mr-3 shadow-md'>
+        <Avatar size='small' color='grey' className='mr-3 shadow-md'>
           <Gift size={16} />
         </Avatar>
         <div>
@@ -54,126 +94,9 @@ const InvitationCard = ({
         </div>
       </div>
 
-      {/* 收益展示区域 */}
+      {/* 邀请区域 */}
       <Space vertical style={{ width: '100%' }}>
-        {/* 统计数据统一卡片 */}
-        <Card
-          className='!rounded-xl w-full'
-          cover={
-            <div
-              className='relative h-30'
-              style={{
-                '--palette-primary-darkerChannel': '0 75 80',
-                backgroundImage: `linear-gradient(0deg, rgba(var(--palette-primary-darkerChannel) / 80%), rgba(var(--palette-primary-darkerChannel) / 80%)), url('/cover-4.webp')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              {/* 标题和按钮 */}
-              <div className='relative z-10 h-full flex flex-col justify-between p-4'>
-                <div className='flex justify-between items-center'>
-                  <Text strong style={{ color: 'white', fontSize: '16px' }}>
-                    {t('收益统计')}
-                  </Text>
-                  <Button
-                    type='primary'
-                    theme='solid'
-                    size='small'
-                    disabled={
-                      !userState?.user?.aff_quota ||
-                      userState?.user?.aff_quota <= 0
-                    }
-                    onClick={() => setOpenTransfer(true)}
-                    className='!rounded-lg'
-                  >
-                    <Zap size={12} className='mr-1' />
-                    {t('划转到余额')}
-                  </Button>
-                </div>
-
-                {/* 统计数据 */}
-                <div className='grid grid-cols-3 gap-6 mt-4'>
-                  {/* 待使用收益 */}
-                  <div className='text-center'>
-                    <div
-                      className='text-base sm:text-2xl font-bold mb-2'
-                      style={{ color: 'white' }}
-                    >
-                      {renderQuota(userState?.user?.aff_quota || 0)}
-                    </div>
-                    <div className='flex items-center justify-center text-sm'>
-                      <TrendingUp
-                        size={14}
-                        className='mr-1'
-                        style={{ color: 'rgba(255,255,255,0.8)' }}
-                      />
-                      <Text
-                        style={{
-                          color: 'rgba(255,255,255,0.8)',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {t('待使用收益')}
-                      </Text>
-                    </div>
-                  </div>
-
-                  {/* 总收益 */}
-                  <div className='text-center'>
-                    <div
-                      className='text-base sm:text-2xl font-bold mb-2'
-                      style={{ color: 'white' }}
-                    >
-                      {renderQuota(userState?.user?.aff_history_quota || 0)}
-                    </div>
-                    <div className='flex items-center justify-center text-sm'>
-                      <BarChart2
-                        size={14}
-                        className='mr-1'
-                        style={{ color: 'rgba(255,255,255,0.8)' }}
-                      />
-                      <Text
-                        style={{
-                          color: 'rgba(255,255,255,0.8)',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {t('总收益')}
-                      </Text>
-                    </div>
-                  </div>
-
-                  {/* 邀请人数 */}
-                  <div className='text-center'>
-                    <div
-                      className='text-base sm:text-2xl font-bold mb-2'
-                      style={{ color: 'white' }}
-                    >
-                      {userState?.user?.aff_count || 0}
-                    </div>
-                    <div className='flex items-center justify-center text-sm'>
-                      <Users
-                        size={14}
-                        className='mr-1'
-                        style={{ color: 'rgba(255,255,255,0.8)' }}
-                      />
-                      <Text
-                        style={{
-                          color: 'rgba(255,255,255,0.8)',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {t('邀请人数')}
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        >
-          {/* 邀请链接部分 */}
+        <Card className='wallet-premium__panel !rounded-xl w-full'>
           <Input
             value={affLink}
             readonly
@@ -183,9 +106,9 @@ const InvitationCard = ({
               <Button
                 type='primary'
                 theme='solid'
+                className='wallet-premium__action-btn !rounded-lg'
                 onClick={handleAffLinkClick}
                 icon={<Copy size={14} />}
-                className='!rounded-lg'
               >
                 {t('复制')}
               </Button>
@@ -195,31 +118,74 @@ const InvitationCard = ({
 
         {/* 奖励说明 */}
         <Card
-          className='!rounded-xl w-full'
+          className='wallet-premium__panel !rounded-xl w-full'
           title={<Text type='tertiary'>{t('奖励说明')}</Text>}
         >
           <div className='space-y-3'>
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('邀请好友注册，好友充值后您可获得相应奖励')}
+                {t('通过邀请链接邀请好友注册，邀请明细可在下方查看')}
               </Text>
             </div>
 
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('通过划转功能将奖励额度转入到您的账户余额中')}
+                {t('邀请明细仅统计易支付的成功充值记录，金额为累计充值金额')}
               </Text>
             </div>
 
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('邀请的好友越多，获得的奖励越多')}
+                {t('分成比例由老板与代理线下协商，平台仅提供邀请数据展示')}
               </Text>
             </div>
           </div>
+        </Card>
+
+        <Card
+          className='wallet-premium__panel !rounded-xl w-full'
+          title={<Text type='tertiary'>{t('邀请信息')}</Text>}
+        >
+          <div className='mb-3'>
+            <Text type='tertiary'>
+              {t('总充值金额')}：
+              <Text className='wallet-premium__money'>¥{Number(inviteeTopupTotalMoney || 0).toFixed(2)}</Text>
+            </Text>
+          </div>
+          <div className='mb-3'>
+            <Input
+              value={inviteeTopupKeyword}
+              showClear
+              placeholder={t('用户')}
+              onChange={(value) => {
+                setInviteeTopupKeyword(value);
+                setInviteeTopupPage(1);
+              }}
+            />
+          </div>
+          <Table
+            columns={inviteeColumns}
+            dataSource={inviteeTopupItems || []}
+            rowKey='invitee_id'
+            loading={inviteeTopupLoading}
+            size='small'
+            pagination={{
+              currentPage: inviteeTopupPage,
+              pageSize: inviteeTopupPageSize,
+              total: inviteeTopupTotal || 0,
+              pageSizeOpts: [10, 20, 50],
+              showSizeChanger: true,
+              onPageChange: (page) => setInviteeTopupPage(page),
+              onPageSizeChange: (size) => {
+                setInviteeTopupPageSize(size);
+                setInviteeTopupPage(1);
+              },
+            }}
+            empty={<Empty description={t('暂无数据')} />}
+          />
         </Card>
       </Space>
     </Card>

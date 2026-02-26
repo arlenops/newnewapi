@@ -21,7 +21,6 @@ import HeaderBar from './headerbar';
 import { Layout } from '@douyinfe/semi-ui';
 import SiderBar from './SiderBar';
 import App from '../../App';
-import FooterBar from './Footer';
 import { ToastContainer } from 'react-toastify';
 import React, { useContext, useEffect, useState } from 'react';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
@@ -47,20 +46,6 @@ const PageLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { i18n } = useTranslation();
   const location = useLocation();
-
-  const cardProPages = [
-    '/console/channel',
-    '/console/log',
-    '/console/redemption',
-    '/console/user',
-    '/console/token',
-    '/console/midjourney',
-    '/console/task',
-    '/console/models',
-    '/pricing',
-  ];
-
-  const shouldHideFooter = cardProPages.includes(location.pathname);
 
   const shouldInnerPadding =
     location.pathname.includes('/console') &&
@@ -149,6 +134,7 @@ const PageLayout = () => {
           overflow: isMobile ? 'visible' : 'auto',
           display: 'flex',
           flexDirection: 'column',
+          minHeight: 0,
         }}
       >
         {showSider && (
@@ -178,32 +164,40 @@ const PageLayout = () => {
               : showSider
                 ? 'var(--sidebar-current-width)'
                 : '0',
+            width: isMobile
+              ? '100%'
+              : showSider
+                ? 'calc(100% - var(--sidebar-current-width))'
+                : '100%',
+            minWidth: 0,
             flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
+            minHeight: 0,
           }}
         >
           <Content
+            className='app-main-content'
             style={{
-              flex: '1 0 auto',
-              overflowY: isMobile ? 'visible' : 'hidden',
+              flex: '1 1 auto',
+              width: '100%',
+              minWidth: 0,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'auto',
+              overflowX: 'hidden',
               WebkitOverflowScrolling: 'touch',
-              padding: shouldInnerPadding ? (isMobile ? '5px' : '24px') : '0',
+              padding: shouldInnerPadding
+                ? isMobile
+                  ? '5px 0'
+                  : '24px 0'
+                : '0',
               position: 'relative',
             }}
           >
             <App />
           </Content>
-          {!shouldHideFooter && (
-            <Layout.Footer
-              style={{
-                flex: '0 0 auto',
-                width: '100%',
-              }}
-            >
-              <FooterBar />
-            </Layout.Footer>
-          )}
         </Layout>
       </Layout>
       <ToastContainer />

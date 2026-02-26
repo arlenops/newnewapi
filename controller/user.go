@@ -203,6 +203,7 @@ func Register(c *gin.Context) {
 			UserId:             insertedUser.Id, // 使用插入后的用户ID
 			Name:               cleanUser.Username + "的初始令牌",
 			Key:                key,
+			Group:              "default", // 默认绑定到 default 分组，而不是留空走用户分组
 			CreatedTime:        common.GetTimestamp(),
 			AccessedTime:       common.GetTimestamp(),
 			ExpiredTime:        -1,     // 永不过期
@@ -216,6 +217,19 @@ func Register(c *gin.Context) {
 		if err := token.Insert(); err != nil {
 			common.ApiErrorI18n(c, i18n.MsgCreateDefaultTokenErr)
 			return
+		}
+
+		// 兜底：当不是 auto 分组策略时，回填该用户所有空分组令牌为 default，
+		// 防止历史/兼容路径导致初始令牌落为“用户分组”(group='')。
+		if !setting.DefaultUseAutoGroup {
+			if err := model.DB.Model(&model.Token{}).
+				Where(map[string]interface{}{
+					"user_id": insertedUser.Id,
+					"group":   "",
+				}).
+				Update("group", "default").Error; err != nil {
+				common.SysLog("failed to backfill default token group: " + err.Error())
+			}
 		}
 	}
 
@@ -363,6 +377,28 @@ func GetAffCode(c *gin.Context) {
 		"data":    user.AffCode,
 	})
 	return
+}
+
+func GetInviteeEpayTopUpSummary(c *gin.Context) {
+	id := c.GetInt("id")
+	pageInfo := common.GetPageQuery(c)
+	keyword := strings.TrimSpace(c.Query("keyword"))
+
+	items, total, totalTopUpMoney, err := model.GetInviteeEpayTopUpSummaries(id, keyword, pageInfo)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+
+	pageInfo.SetTotal(int(total))
+	pageInfo.SetItems(items)
+	common.ApiSuccess(c, gin.H{
+		"page":              pageInfo.Page,
+		"page_size":         pageInfo.PageSize,
+		"total":             pageInfo.Total,
+		"items":             pageInfo.Items,
+		"total_topup_money": totalTopUpMoney,
+	})
 }
 
 func GetSelf(c *gin.Context) {

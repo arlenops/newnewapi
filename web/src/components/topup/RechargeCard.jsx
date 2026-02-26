@@ -119,21 +119,12 @@ const RechargeCard = ({
     <Space vertical style={{ width: '100%' }}>
       {/* 统计数据 */}
       <Card
-        className='!rounded-xl w-full'
+        className='wallet-premium__panel wallet-premium__stats-card !rounded-xl w-full'
         cover={
-          <div
-            className='relative h-30'
-            style={{
-              '--palette-primary-darkerChannel': '37 99 235',
-              backgroundImage: `linear-gradient(0deg, rgba(var(--palette-primary-darkerChannel) / 80%), rgba(var(--palette-primary-darkerChannel) / 80%)), url('/cover-4.webp')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
+          <div className='wallet-premium__stats-cover relative h-30'>
             <div className='relative z-10 h-full flex flex-col justify-between p-4'>
               <div className='flex justify-between items-center'>
-                <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                <Text strong className='wallet-premium__stats-title'>
                   {t('账户统计')}
                 </Text>
               </div>
@@ -142,24 +133,12 @@ const RechargeCard = ({
               <div className='grid grid-cols-3 gap-6 mt-4'>
                 {/* 当前余额 */}
                 <div className='text-center'>
-                  <div
-                    className='text-base sm:text-2xl font-bold mb-2'
-                    style={{ color: 'white' }}
-                  >
+                  <div className='wallet-premium__stats-value text-base sm:text-2xl font-bold mb-2'>
                     {renderQuota(userState?.user?.quota)}
                   </div>
                   <div className='flex items-center justify-center text-sm'>
-                    <Wallet
-                      size={14}
-                      className='mr-1'
-                      style={{ color: 'rgba(255,255,255,0.8)' }}
-                    />
-                    <Text
-                      style={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontSize: '12px',
-                      }}
-                    >
+                    <Wallet size={14} className='mr-1 wallet-premium__stats-icon' />
+                    <Text className='wallet-premium__stats-label'>
                       {t('当前余额')}
                     </Text>
                   </div>
@@ -167,24 +146,15 @@ const RechargeCard = ({
 
                 {/* 历史消耗 */}
                 <div className='text-center'>
-                  <div
-                    className='text-base sm:text-2xl font-bold mb-2'
-                    style={{ color: 'white' }}
-                  >
+                  <div className='wallet-premium__stats-value text-base sm:text-2xl font-bold mb-2'>
                     {renderQuota(userState?.user?.used_quota)}
                   </div>
                   <div className='flex items-center justify-center text-sm'>
                     <TrendingUp
                       size={14}
-                      className='mr-1'
-                      style={{ color: 'rgba(255,255,255,0.8)' }}
+                      className='mr-1 wallet-premium__stats-icon'
                     />
-                    <Text
-                      style={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontSize: '12px',
-                      }}
-                    >
+                    <Text className='wallet-premium__stats-label'>
                       {t('历史消耗')}
                     </Text>
                   </div>
@@ -192,24 +162,15 @@ const RechargeCard = ({
 
                 {/* 请求次数 */}
                 <div className='text-center'>
-                  <div
-                    className='text-base sm:text-2xl font-bold mb-2'
-                    style={{ color: 'white' }}
-                  >
+                  <div className='wallet-premium__stats-value text-base sm:text-2xl font-bold mb-2'>
                     {userState?.user?.request_count || 0}
                   </div>
                   <div className='flex items-center justify-center text-sm'>
                     <BarChart2
                       size={14}
-                      className='mr-1'
-                      style={{ color: 'rgba(255,255,255,0.8)' }}
+                      className='mr-1 wallet-premium__stats-icon'
                     />
-                    <Text
-                      style={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontSize: '12px',
-                      }}
-                    >
+                    <Text className='wallet-premium__stats-label'>
                       {t('请求次数')}
                     </Text>
                   </div>
@@ -277,9 +238,9 @@ const RechargeCard = ({
                             />
                           }
                         >
-                          <Text type='secondary' className='text-red-600'>
+                          <Text type='secondary' className='text-neutral-700'>
                             {t('实付金额：')}
-                            <span style={{ color: 'red' }}>
+                            <span className='wallet-premium__money'>
                               {renderAmount()}
                             </span>
                           </Text>
@@ -312,22 +273,16 @@ const RechargeCard = ({
                                 }
                                 icon={
                                   payMethod.type === 'alipay' ? (
-                                    <SiAlipay size={18} color='#1677FF' />
+                                    <SiAlipay size={18} />
                                   ) : payMethod.type === 'wxpay' ? (
-                                    <SiWechat size={18} color='#07C160' />
+                                    <SiWechat size={18} />
                                   ) : payMethod.type === 'stripe' ? (
-                                    <SiStripe size={18} color='#635BFF' />
+                                    <SiStripe size={18} />
                                   ) : (
-                                    <CreditCard
-                                      size={18}
-                                      color={
-                                        payMethod.color ||
-                                        'var(--semi-color-text-2)'
-                                      }
-                                    />
+                                    <CreditCard size={18} />
                                   )
                                 }
-                                className='!rounded-lg !px-4 !py-2'
+                                className='wallet-premium__pay-method-btn !rounded-lg !px-4 !py-2'
                               >
                                 {payMethod.name}
                               </Button>
@@ -428,11 +383,12 @@ const RechargeCard = ({
                       return (
                         <Card
                           key={index}
+                          className='wallet-premium__preset-card'
                           style={{
                             cursor: 'pointer',
                             border:
                               selectedPreset === preset.value
-                                ? '2px solid var(--semi-color-primary)'
+                                ? '2px solid rgba(17, 17, 17, 0.9)'
                                 : '1px solid var(--semi-color-border)',
                             height: '100%',
                             width: '100%',
@@ -491,7 +447,7 @@ const RechargeCard = ({
                       <Card
                         key={index}
                         onClick={() => creemPreTopUp(product)}
-                        className='cursor-pointer !rounded-2xl transition-all hover:shadow-md border-gray-200 hover:border-gray-300'
+                        className='wallet-premium__creem-card cursor-pointer !rounded-2xl transition-all hover:shadow-md border-gray-200 hover:border-gray-300'
                         bodyStyle={{ textAlign: 'center', padding: '16px' }}
                       >
                         <div className='font-medium text-lg mb-2'>
@@ -500,7 +456,7 @@ const RechargeCard = ({
                         <div className='text-sm text-gray-600 mb-2'>
                           {t('充值额度')}: {product.quota}
                         </div>
-                        <div className='text-lg font-semibold text-blue-600'>
+                        <div className='text-lg font-semibold text-neutral-900'>
                           {product.currency === 'EUR' ? '€' : '$'}
                           {product.price}
                         </div>
@@ -525,7 +481,7 @@ const RechargeCard = ({
 
       {/* 兑换码充值 */}
       <Card
-        className='!rounded-xl w-full'
+        className='wallet-premium__panel !rounded-xl w-full'
         title={
           <Text type='tertiary' strong>
             {t('兑换码充值')}
@@ -548,6 +504,7 @@ const RechargeCard = ({
                 <Button
                   type='primary'
                   theme='solid'
+                  className='wallet-premium__action-btn'
                   onClick={topUp}
                   loading={isSubmitting}
                 >
@@ -579,11 +536,11 @@ const RechargeCard = ({
   );
 
   return (
-    <Card className='!rounded-2xl shadow-sm border-0'>
+    <Card className='wallet-premium__main-card !rounded-2xl shadow-sm border-0'>
       {/* 卡片头部 */}
       <div className='flex items-center justify-between mb-4'>
         <div className='flex items-center'>
-          <Avatar size='small' color='blue' className='mr-3 shadow-md'>
+          <Avatar size='small' color='grey' className='mr-3 shadow-md'>
             <CreditCard size={16} />
           </Avatar>
           <div>
@@ -596,6 +553,7 @@ const RechargeCard = ({
         <Button
           icon={<Receipt size={16} />}
           theme='solid'
+          className='wallet-premium__bill-btn'
           onClick={onOpenHistory}
         >
           {t('账单')}
@@ -603,7 +561,12 @@ const RechargeCard = ({
       </div>
 
       {shouldShowSubscription ? (
-        <Tabs type='card' activeKey={activeTab} onChange={setActiveTab}>
+        <Tabs
+          type='card'
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          className='wallet-premium__tabs'
+        >
           <TabPane
             tab={
               <div className='flex items-center gap-2'>

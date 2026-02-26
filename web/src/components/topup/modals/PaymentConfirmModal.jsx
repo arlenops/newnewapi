@@ -123,31 +123,13 @@ const PaymentConfirmModal = ({
                     return (
                       <>
                         {payMethod.type === 'alipay' ? (
-                          <SiAlipay
-                            className='mr-2'
-                            size={16}
-                            color='#1677FF'
-                          />
+                          <SiAlipay className='mr-2' size={16} />
                         ) : payMethod.type === 'wxpay' ? (
-                          <SiWechat
-                            className='mr-2'
-                            size={16}
-                            color='#07C160'
-                          />
+                          <SiWechat className='mr-2' size={16} />
                         ) : payMethod.type === 'stripe' ? (
-                          <SiStripe
-                            className='mr-2'
-                            size={16}
-                            color='#635BFF'
-                          />
+                          <SiStripe className='mr-2' size={16} />
                         ) : (
-                          <CreditCard
-                            className='mr-2'
-                            size={16}
-                            color={
-                              payMethod.color || 'var(--semi-color-text-2)'
-                            }
-                          />
+                          <CreditCard className='mr-2' size={16} />
                         )}
                         <Text className='text-slate-900 dark:text-slate-100'>
                           {payMethod.name}
@@ -159,11 +141,7 @@ const PaymentConfirmModal = ({
                     if (payWay === 'alipay') {
                       return (
                         <>
-                          <SiAlipay
-                            className='mr-2'
-                            size={16}
-                            color='#1677FF'
-                          />
+                          <SiAlipay className='mr-2' size={16} />
                           <Text className='text-slate-900 dark:text-slate-100'>
                             {t('支付宝')}
                           </Text>
@@ -172,11 +150,7 @@ const PaymentConfirmModal = ({
                     } else if (payWay === 'stripe') {
                       return (
                         <>
-                          <SiStripe
-                            className='mr-2'
-                            size={16}
-                            color='#635BFF'
-                          />
+                          <SiStripe className='mr-2' size={16} />
                           <Text className='text-slate-900 dark:text-slate-100'>
                             Stripe
                           </Text>
@@ -185,11 +159,7 @@ const PaymentConfirmModal = ({
                     } else {
                       return (
                         <>
-                          <SiWechat
-                            className='mr-2'
-                            size={16}
-                            color='#07C160'
-                          />
+                          <SiWechat className='mr-2' size={16} />
                           <Text className='text-slate-900 dark:text-slate-100'>
                             {t('微信')}
                           </Text>

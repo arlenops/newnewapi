@@ -62,9 +62,10 @@ const SearchActions = memo(
     }, [tokenUnit, setTokenUnit]);
 
     return (
-      <div className='flex items-center gap-2 w-full'>
+      <div className='market-premium__search-actions flex items-center gap-2 w-full'>
         <div className='flex-1'>
           <Input
+            className='market-premium__search-input'
             prefix={<IconSearch />}
             placeholder={t('模糊搜索模型名称')}
             value={searchValue}
@@ -81,7 +82,7 @@ const SearchActions = memo(
           icon={<IconCopy />}
           onClick={handleCopyClick}
           disabled={selectedRowKeys.length === 0}
-          className='!bg-blue-500 hover:!bg-blue-600 !text-white disabled:!bg-gray-300 disabled:!text-gray-500'
+          className='market-premium__copy-btn disabled:!bg-gray-300 disabled:!text-gray-500'
         >
           {t('复制')}
         </Button>
@@ -92,7 +93,9 @@ const SearchActions = memo(
 
             {/* 充值价格显示开关 */}
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>{t('充值价格显示')}</span>
+              <span className='market-premium__action-label text-sm text-gray-600'>
+                {t('充值价格显示')}
+              </span>
               <Switch
                 checked={showWithRecharge}
                 onChange={setShowWithRecharge}
@@ -102,6 +105,7 @@ const SearchActions = memo(
             {/* 货币单位选择 */}
             {showWithRecharge && (
               <Select
+                className='market-premium__currency-select'
                 value={currency}
                 onChange={setCurrency}
                 optionList={[
@@ -114,12 +118,15 @@ const SearchActions = memo(
 
             {/* 显示倍率开关 */}
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>{t('倍率')}</span>
+              <span className='market-premium__action-label text-sm text-gray-600'>
+                {t('倍率')}
+              </span>
               <Switch checked={showRatio} onChange={setShowRatio} />
             </div>
 
             {/* 视图模式切换按钮 */}
             <Button
+              className='market-premium__action-toggle'
               theme={viewMode === 'table' ? 'solid' : 'outline'}
               type={viewMode === 'table' ? 'primary' : 'tertiary'}
               onClick={handleViewModeToggle}
@@ -129,6 +136,7 @@ const SearchActions = memo(
 
             {/* Token单位切换按钮 */}
             <Button
+              className='market-premium__action-toggle'
               theme={tokenUnit === 'K' ? 'solid' : 'outline'}
               type={tokenUnit === 'K' ? 'primary' : 'tertiary'}
               onClick={handleTokenUnitToggle}
@@ -140,6 +148,7 @@ const SearchActions = memo(
 
         {isMobile && (
           <Button
+            className='market-premium__filter-btn'
             theme='outline'
             type='tertiary'
             icon={<IconFilter />}

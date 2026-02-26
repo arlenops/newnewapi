@@ -62,7 +62,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
     getUnreadKeys,
   } = useNotifications(statusState);
 
-  const { mainNavLinks } = useNavigation(t, docsLink, headerNavModules);
+  const { mainNavLinks } = useNavigation(
+    t,
+    docsLink,
+    headerNavModules,
+    userState,
+  );
 
   return (
     <header className='text-semi-color-text-0 sticky top-0 z-50 transition-colors duration-300 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-lg'>
@@ -74,55 +79,111 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
         unreadKeys={getUnreadKeys()}
       />
 
-      <div className='w-full px-2'>
-        <div className='flex items-center justify-between h-16'>
-          <div className='flex items-center'>
-            <MobileMenuButton
-              isConsoleRoute={isConsoleRoute}
+      <div className='w-full px-[14px] sm:px-5'>
+        <div className='mx-auto w-full max-w-[1280px]'>
+          <div className='flex items-center justify-between h-16 md:hidden'>
+            <div className='flex items-center'>
+              <MobileMenuButton
+                isConsoleRoute={isConsoleRoute}
+                isMobile={isMobile}
+                drawerOpen={drawerOpen}
+                collapsed={collapsed}
+                onToggle={handleMobileMenuToggle}
+                t={t}
+              />
+
+              <HeaderLogo
+                isMobile={isMobile}
+                isConsoleRoute={isConsoleRoute}
+                logo={logo}
+                logoLoaded={logoLoaded}
+                isLoading={isLoading}
+                systemName={systemName}
+                isSelfUseMode={isSelfUseMode}
+                isDemoSiteMode={isDemoSiteMode}
+                t={t}
+              />
+            </div>
+
+            <Navigation
+              mainNavLinks={mainNavLinks}
               isMobile={isMobile}
-              drawerOpen={drawerOpen}
-              collapsed={collapsed}
-              onToggle={handleMobileMenuToggle}
-              t={t}
+              isLoading={isLoading}
+              userState={userState}
+              pricingRequireAuth={pricingRequireAuth}
             />
 
-            <HeaderLogo
-              isMobile={isMobile}
-              isConsoleRoute={isConsoleRoute}
-              logo={logo}
-              logoLoaded={logoLoaded}
+            <ActionButtons
+              isNewYear={isNewYear}
+              unreadCount={unreadCount}
+              onNoticeOpen={handleNoticeOpen}
+              theme={theme}
+              onThemeToggle={handleThemeToggle}
+              currentLang={currentLang}
+              onLanguageChange={handleLanguageChange}
+              userState={userState}
               isLoading={isLoading}
-              systemName={systemName}
+              isMobile={isMobile}
               isSelfUseMode={isSelfUseMode}
-              isDemoSiteMode={isDemoSiteMode}
+              logout={logout}
+              navigate={navigate}
               t={t}
             />
           </div>
 
-          <Navigation
-            mainNavLinks={mainNavLinks}
-            isMobile={isMobile}
-            isLoading={isLoading}
-            userState={userState}
-            pricingRequireAuth={pricingRequireAuth}
-          />
+          <div className='hidden md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-16'>
+            <div className='flex items-center justify-start min-w-0'>
+              <MobileMenuButton
+                isConsoleRoute={isConsoleRoute}
+                isMobile={isMobile}
+                drawerOpen={drawerOpen}
+                collapsed={collapsed}
+                onToggle={handleMobileMenuToggle}
+                t={t}
+              />
 
-          <ActionButtons
-            isNewYear={isNewYear}
-            unreadCount={unreadCount}
-            onNoticeOpen={handleNoticeOpen}
-            theme={theme}
-            onThemeToggle={handleThemeToggle}
-            currentLang={currentLang}
-            onLanguageChange={handleLanguageChange}
-            userState={userState}
-            isLoading={isLoading}
-            isMobile={isMobile}
-            isSelfUseMode={isSelfUseMode}
-            logout={logout}
-            navigate={navigate}
-            t={t}
-          />
+              <HeaderLogo
+                isMobile={isMobile}
+                isConsoleRoute={isConsoleRoute}
+                logo={logo}
+                logoLoaded={logoLoaded}
+                isLoading={isLoading}
+                systemName={systemName}
+                isSelfUseMode={isSelfUseMode}
+                isDemoSiteMode={isDemoSiteMode}
+                t={t}
+              />
+            </div>
+
+            <div className='flex items-center justify-center min-w-0'>
+              <Navigation
+                mainNavLinks={mainNavLinks}
+                isMobile={isMobile}
+                isLoading={isLoading}
+                userState={userState}
+                pricingRequireAuth={pricingRequireAuth}
+              />
+            </div>
+
+            <div className='flex items-center justify-end min-w-0'>
+              <ActionButtons
+                isNewYear={isNewYear}
+                unreadCount={unreadCount}
+                onNoticeOpen={handleNoticeOpen}
+                theme={theme}
+                onThemeToggle={handleThemeToggle}
+                currentLang={currentLang}
+                onLanguageChange={handleLanguageChange}
+                userState={userState}
+                isLoading={isLoading}
+                isMobile={isMobile}
+                isSelfUseMode={isSelfUseMode}
+                logout={logout}
+                navigate={navigate}
+                t={t}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </header>

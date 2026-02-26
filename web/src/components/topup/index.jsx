@@ -32,17 +32,23 @@ import { Modal, Toast } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
+import { useLocation } from 'react-router-dom';
 
 import RechargeCard from './RechargeCard';
 import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
 import PaymentConfirmModal from './modals/PaymentConfirmModal';
 import TopupHistoryModal from './modals/TopupHistoryModal';
+import './topup.css';
 
 const TopUp = () => {
   const { t } = useTranslation();
   const [userState, userDispatch] = useContext(UserContext);
   const [statusState] = useContext(StatusContext);
+  const location = useLocation();
+  const pageSpacingClass = location.pathname.startsWith('/console')
+    ? 'wallet-premium-page--console'
+    : 'wallet-premium-page--standalone';
 
   const [redemptionCode, setRedemptionCode] = useState('');
   const [amount, setAmount] = useState(0.0);
@@ -83,6 +89,13 @@ const TopUp = () => {
   const [affLink, setAffLink] = useState('');
   const [openTransfer, setOpenTransfer] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
+  const [inviteeTopupItems, setInviteeTopupItems] = useState([]);
+  const [inviteeTopupTotal, setInviteeTopupTotal] = useState(0);
+  const [inviteeTopupPage, setInviteeTopupPage] = useState(1);
+  const [inviteeTopupPageSize, setInviteeTopupPageSize] = useState(10);
+  const [inviteeTopupKeyword, setInviteeTopupKeyword] = useState('');
+  const [inviteeTopupLoading, setInviteeTopupLoading] = useState(false);
+  const [inviteeTopupTotalMoney, setInviteeTopupTotalMoney] = useState(0);
 
   // 账单Modal状态
   const [openHistory, setOpenHistory] = useState(false);
@@ -506,6 +519,39 @@ const TopUp = () => {
     }
   };
 
+  // 获取邀请用户易支付充值汇总
+  const getInviteeTopupSummary = async (
+    page = inviteeTopupPage,
+    pageSize = inviteeTopupPageSize,
+    keyword = inviteeTopupKeyword,
+  ) => {
+    setInviteeTopupLoading(true);
+    try {
+      const query =
+        `p=${page}&page_size=${pageSize}` +
+        (keyword ? `&keyword=${encodeURIComponent(keyword)}` : '');
+      const res = await API.get(`/api/user/invitees/topup?${query}`);
+      const { success, message, data } = res.data;
+      if (success) {
+        setInviteeTopupItems(data.items || []);
+        setInviteeTopupTotal(data.total || 0);
+        setInviteeTopupTotalMoney(Number(data.total_topup_money || 0));
+      } else {
+        setInviteeTopupItems([]);
+        setInviteeTopupTotal(0);
+        setInviteeTopupTotalMoney(0);
+        showError(message);
+      }
+    } catch (error) {
+      setInviteeTopupItems([]);
+      setInviteeTopupTotal(0);
+      setInviteeTopupTotalMoney(0);
+      showError(t('加载失败'));
+    } finally {
+      setInviteeTopupLoading(false);
+    }
+  };
+
   // 划转邀请额度
   const transfer = async () => {
     if (transferAmount < getQuotaPerUnit()) {
@@ -532,6 +578,13 @@ const TopUp = () => {
   };
 
   useEffect(() => {
+    document.body.classList.add('wallet-premium-active');
+    return () => {
+      document.body.classList.remove('wallet-premium-active');
+    };
+  }, []);
+
+  useEffect(() => {
     // 始终获取最新用户数据，确保余额等统计信息准确
     getUserQuota().then();
     setTransferAmount(getQuotaPerUnit());
@@ -542,6 +595,14 @@ const TopUp = () => {
     affFetchedRef.current = true;
     getAffLink().then();
   }, []);
+
+  useEffect(() => {
+    getInviteeTopupSummary(
+      inviteeTopupPage,
+      inviteeTopupPageSize,
+      inviteeTopupKeyword,
+    ).then();
+  }, [inviteeTopupPage, inviteeTopupPageSize, inviteeTopupKeyword]);
 
   // 在 statusState 可用时获取充值信息
   useEffect(() => {
@@ -665,7 +726,9 @@ const TopUp = () => {
   };
 
   return (
-    <div className='w-full max-w-7xl mx-auto relative min-h-screen lg:min-h-0 mt-[60px] px-2'>
+    <div
+      className={`wallet-premium wallet-premium-page ${pageSpacingClass} w-full max-w-[1600px] mx-auto relative min-h-screen lg:min-h-0 px-3 md:px-5 xl:px-8`}
+    >
       {/* 划转模态框 */}
       <TransferModal
         t={t}
@@ -778,11 +841,18 @@ const TopUp = () => {
         />
         <InvitationCard
           t={t}
-          userState={userState}
-          renderQuota={renderQuota}
-          setOpenTransfer={setOpenTransfer}
           affLink={affLink}
           handleAffLinkClick={handleAffLinkClick}
+          inviteeTopupItems={inviteeTopupItems}
+          inviteeTopupTotal={inviteeTopupTotal}
+          inviteeTopupPage={inviteeTopupPage}
+          inviteeTopupPageSize={inviteeTopupPageSize}
+          inviteeTopupKeyword={inviteeTopupKeyword}
+          inviteeTopupLoading={inviteeTopupLoading}
+          inviteeTopupTotalMoney={inviteeTopupTotalMoney}
+          setInviteeTopupPage={setInviteeTopupPage}
+          setInviteeTopupPageSize={setInviteeTopupPageSize}
+          setInviteeTopupKeyword={setInviteeTopupKeyword}
         />
       </div>
     </div>

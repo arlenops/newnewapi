@@ -20,23 +20,6 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { memo } from 'react';
 import { Card, Skeleton } from '@douyinfe/semi-ui';
 
-const THEME_COLORS = {
-  allVendors: {
-    primary: '37 99 235',
-    background: 'rgba(59, 130, 246, 0.1)',
-    border: 'rgba(59, 130, 246, 0.2)',
-  },
-  specific: {
-    primary: '16 185 129',
-    background: 'rgba(16, 185, 129, 0.1)',
-    border: 'rgba(16, 185, 129, 0.2)',
-  },
-  neutral: {
-    background: 'rgba(156, 163, 175, 0.1)',
-    border: 'rgba(156, 163, 175, 0.2)',
-  },
-};
-
 const SIZES = {
   title: { width: { all: 120, specific: 100 }, height: 24 },
   tag: { width: 80, height: 20 },
@@ -47,48 +30,46 @@ const SIZES = {
 };
 
 const SKELETON_STYLES = {
-  cover: (primaryColor) => ({
-    '--palette-primary-darkerChannel': primaryColor,
-    backgroundImage: `linear-gradient(0deg, rgba(var(--palette-primary-darkerChannel) / 80%), rgba(var(--palette-primary-darkerChannel) / 80%)), url('/cover-4.webp')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  }),
+  cover: {
+    background:
+      'linear-gradient(138deg, rgba(255,255,255,0.94) 0%, rgba(247,249,252,0.9) 54%, rgba(244,248,255,0.88) 100%)',
+    borderBottom: '1px solid rgba(17, 17, 17, 0.12)',
+  },
   title: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(17, 17, 17, 0.14)',
     borderRadius: 8,
-    backdropFilter: 'blur(4px)',
   },
   tag: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.74)',
     borderRadius: 9999,
-    backdropFilter: 'blur(4px)',
-    border: '1px solid rgba(255,255,255,0.3)',
+    border: '1px solid rgba(17, 17, 17, 0.12)',
   },
   description: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(17, 17, 17, 0.11)',
     borderRadius: 4,
-    backdropFilter: 'blur(4px)',
   },
-  avatar: (isAllVendors) => {
-    const colors = isAllVendors
-      ? THEME_COLORS.allVendors
-      : THEME_COLORS.specific;
-    return {
-      backgroundColor: colors.background,
-      borderRadius: 12,
-      border: `1px solid ${colors.border}`,
-    };
+  avatar: {
+    background:
+      'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(240,243,247,0.92) 100%)',
+    borderRadius: 12,
+    border: '1px solid rgba(17, 17, 17, 0.12)',
+    boxShadow: '0 6px 14px -10px rgba(0, 0, 0, 0.35)',
+  },
+  avatarWrap: {
+    borderRadius: 16,
+    border: '1px solid rgba(17, 17, 17, 0.1)',
+    background: 'rgba(255, 255, 255, 0.9)',
+    boxShadow: '0 12px 24px -18px rgba(0, 0, 0, 0.28)',
   },
   searchInput: {
-    backgroundColor: THEME_COLORS.neutral.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 8,
-    border: `1px solid ${THEME_COLORS.neutral.border}`,
+    border: '1px solid rgba(17, 17, 17, 0.12)',
   },
   button: {
-    backgroundColor: THEME_COLORS.neutral.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 8,
-    border: `1px solid ${THEME_COLORS.neutral.border}`,
+    border: '1px solid rgba(17, 17, 17, 0.16)',
   },
 };
 
@@ -100,15 +81,11 @@ const PricingVendorIntroSkeleton = memo(
   ({ isAllVendors = false, isMobile = false }) => {
     const placeholder = (
       <Card
-        className='!rounded-2xl shadow-sm border-0'
+        className='market-premium__hero-card !rounded-2xl shadow-sm border-0'
         cover={
           <div
-            className='relative h-full'
-            style={SKELETON_STYLES.cover(
-              isAllVendors
-                ? THEME_COLORS.allVendors.primary
-                : THEME_COLORS.specific.primary,
-            )}
+            className='market-premium__hero-cover relative h-full'
+            style={SKELETON_STYLES.cover}
           >
             <div className='relative z-10 h-full flex items-center justify-between p-4'>
               <div className='flex-1 min-w-0 mr-4'>
@@ -144,7 +121,7 @@ const PricingVendorIntroSkeleton = memo(
                   {createSkeletonRect(
                     {
                       ...SKELETON_STYLES.description,
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backgroundColor: 'rgba(17, 17, 17, 0.09)',
                       width: '75%',
                       height: SIZES.description.height,
                     },
@@ -153,10 +130,13 @@ const PricingVendorIntroSkeleton = memo(
                 </div>
               </div>
 
-              <div className='flex-shrink-0 w-16 h-16 rounded-2xl bg-white/90 shadow-md backdrop-blur-sm flex items-center justify-center'>
+              <div
+                className='flex-shrink-0 w-16 h-16 flex items-center justify-center market-premium__vendor-avatar'
+                style={SKELETON_STYLES.avatarWrap}
+              >
                 {createSkeletonRect(
                   {
-                    ...SKELETON_STYLES.avatar(isAllVendors),
+                    ...SKELETON_STYLES.avatar,
                     width: SIZES.avatar.width,
                     height: SIZES.avatar.height,
                   },

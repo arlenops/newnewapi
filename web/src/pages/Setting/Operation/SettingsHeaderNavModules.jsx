@@ -32,6 +32,41 @@ import { useTranslation } from 'react-i18next';
 import { StatusContext } from '../../../context/Status';
 
 const { Text } = Typography;
+const DEFAULT_HEADER_NAV_MODULES = {
+  home: true,
+  console: true,
+  token: true,
+  wallet: true,
+  account: true,
+  logs: true,
+  pricing: {
+    enabled: true,
+    requireAuth: false,
+  },
+  docs: true,
+  about: true,
+};
+
+const normalizeHeaderNavModules = (modules) => {
+  const rawModules = modules || {};
+  const rawPricingConfig = rawModules.pricing;
+  const normalizedPricing =
+    typeof rawPricingConfig === 'boolean'
+      ? {
+          enabled: rawPricingConfig,
+          requireAuth: false,
+        }
+      : {
+          enabled: rawPricingConfig?.enabled ?? true,
+          requireAuth: rawPricingConfig?.requireAuth ?? false,
+        };
+
+  return {
+    ...DEFAULT_HEADER_NAV_MODULES,
+    ...rawModules,
+    pricing: normalizedPricing,
+  };
+};
 
 export default function SettingsHeaderNavModules(props) {
   const { t } = useTranslation();
@@ -39,16 +74,9 @@ export default function SettingsHeaderNavModules(props) {
   const [statusState, statusDispatch] = useContext(StatusContext);
 
   // 顶栏模块管理状态
-  const [headerNavModules, setHeaderNavModules] = useState({
-    home: true,
-    console: true,
-    pricing: {
-      enabled: true,
-      requireAuth: false, // 默认不需要登录鉴权
-    },
-    docs: true,
-    about: true,
-  });
+  const [headerNavModules, setHeaderNavModules] = useState(
+    DEFAULT_HEADER_NAV_MODULES,
+  );
 
   // 处理顶栏模块配置变更
   function handleHeaderNavModuleChange(moduleKey) {
@@ -79,17 +107,7 @@ export default function SettingsHeaderNavModules(props) {
 
   // 重置顶栏模块为默认配置
   function resetHeaderNavModules() {
-    const defaultModules = {
-      home: true,
-      console: true,
-      pricing: {
-        enabled: true,
-        requireAuth: false,
-      },
-      docs: true,
-      about: true,
-    };
-    setHeaderNavModules(defaultModules);
+    setHeaderNavModules(DEFAULT_HEADER_NAV_MODULES);
     showSuccess(t('已重置为默认配置'));
   }
 
@@ -133,30 +151,12 @@ export default function SettingsHeaderNavModules(props) {
     if (props.options && props.options.HeaderNavModules) {
       try {
         const modules = JSON.parse(props.options.HeaderNavModules);
-
-        // 处理向后兼容性：如果pricing是boolean，转换为对象格式
-        if (typeof modules.pricing === 'boolean') {
-          modules.pricing = {
-            enabled: modules.pricing,
-            requireAuth: false, // 默认不需要登录鉴权
-          };
-        }
-
-        setHeaderNavModules(modules);
+        setHeaderNavModules(normalizeHeaderNavModules(modules));
       } catch (error) {
-        // 使用默认配置
-        const defaultModules = {
-          home: true,
-          console: true,
-          pricing: {
-            enabled: true,
-            requireAuth: false,
-          },
-          docs: true,
-          about: true,
-        };
-        setHeaderNavModules(defaultModules);
+        setHeaderNavModules(DEFAULT_HEADER_NAV_MODULES);
       }
+    } else {
+      setHeaderNavModules(DEFAULT_HEADER_NAV_MODULES);
     }
   }, [props.options]);
 
@@ -171,6 +171,26 @@ export default function SettingsHeaderNavModules(props) {
       key: 'console',
       title: t('控制台'),
       description: t('用户控制面板，管理账户'),
+    },
+    {
+      key: 'token',
+      title: t('令牌管理'),
+      description: t('用于API调用的身份验证令牌，请妥善保管'),
+    },
+    {
+      key: 'wallet',
+      title: t('钱包'),
+      description: t('钱包管理'),
+    },
+    {
+      key: 'account',
+      title: t('账户'),
+      description: t('个人设置'),
+    },
+    {
+      key: 'logs',
+      title: t('日志'),
+      description: `${t('使用日志')} / ${t('绘图日志')} / ${t('任务日志')}`,
     },
     {
       key: 'pricing',

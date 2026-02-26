@@ -41,13 +41,10 @@ import EditTokenModal from './modals/EditTokenModal';
 import { useTokensData } from '../../../hooks/tokens/useTokensData';
 import { useIsMobile } from '../../../hooks/common/useIsMobile';
 import { createCardProPagination } from '../../../helpers/utils';
+import './tokens.css';
 
 function TokensPage() {
-  // Define the function first, then pass it into the hook to avoid TDZ errors
-  const openFluentNotificationRef = useRef(null);
-  const tokensData = useTokensData((key) =>
-    openFluentNotificationRef.current?.(key),
-  );
+  const tokensData = useTokensData();
   const isMobile = useIsMobile();
   const latestRef = useRef({
     tokens: [],
@@ -180,9 +177,6 @@ function TokensPage() {
       duration: 0,
     });
   }
-  // assign after definition so hook callback can call it safely
-  openFluentNotificationRef.current = openFluentNotification;
-
   // Prefill to Fluent handler
   const handlePrefillToFluent = () => {
     const {
@@ -346,10 +340,6 @@ function TokensPage() {
     loading,
     searching,
 
-    // Description state
-    compactMode,
-    setCompactMode,
-
     // Translation
     t,
   } = tokensData;
@@ -365,12 +355,9 @@ function TokensPage() {
 
       <CardPro
         type='type1'
+        className='token-premium-shell'
         descriptionArea={
-          <TokensDescription
-            compactMode={compactMode}
-            setCompactMode={setCompactMode}
-            t={t}
-          />
+          <TokensDescription t={t} />
         }
         actionsArea={
           <div className='flex flex-col md:flex-row justify-between items-center gap-2 w-full'>

@@ -1,0 +1,194 @@
+.login-premium-page {
+  position: relative;
+  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
+  padding: 24px 14px 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f7 58%, #f2f2f2 100%);
+}
+
+.login-premium-page__glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(68px);
+  z-index: 0;
+}
+
+.login-premium-page__glow--left {
+  width: 300px;
+  height: 300px;
+  left: -110px;
+  top: 6%;
+  background: radial-gradient(circle, rgba(111, 155, 255, 0.2) 0%, rgba(111, 155, 255, 0) 70%);
+}
+
+.login-premium-page__glow--right {
+  width: 320px;
+  height: 320px;
+  right: -130px;
+  bottom: -2%;
+  background: radial-gradient(circle, rgba(109, 214, 200, 0.2) 0%, rgba(109, 214, 200, 0) 72%);
+}
+
+.login-premium-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  margin-top: 56px;
+}
+
+.login-premium-wrap {
+  width: 100%;
+}
+
+.login-premium-container {
+  width: 100%;
+}
+
+.login-premium-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.login-premium-brand__name {
+  margin: 0 !important;
+  color: #151515 !important;
+  font-size: 30px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.01em;
+}
+
+.login-premium-card.semi-card {
+  border-radius: 22px !important;
+  border: 1px solid rgba(17, 17, 17, 0.12) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(247, 247, 247, 0.96) 100%
+  ) !important;
+  box-shadow:
+    0 22px 44px -30px rgba(0, 0, 0, 0.34),
+    0 6px 16px -12px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.login-premium-card__head {
+  display: flex;
+  justify-content: center;
+  padding: 22px 18px 6px;
+}
+
+.login-premium-title {
+  margin: 0 !important;
+  color: #1a1a1a !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em;
+}
+
+.login-premium-card__body {
+  padding: 10px 14px 22px;
+}
+
+.login-premium-btn.semi-button {
+  border-radius: 999px !important;
+  min-height: 46px;
+  font-weight: 570;
+  letter-spacing: 0.01em;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.login-premium-btn.semi-button:hover {
+  transform: translateY(-1px);
+}
+
+.login-premium-btn.semi-button-theme-outline {
+  border-color: rgba(17, 17, 17, 0.14) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.login-premium-btn.semi-button-theme-outline:hover {
+  background: #ffffff !important;
+  border-color: rgba(17, 17, 17, 0.24) !important;
+}
+
+.login-premium-btn--primary.semi-button,
+.login-premium-btn.semi-button-theme-solid {
+  border-color: #111111 !important;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%) !important;
+  box-shadow: 0 12px 22px -16px rgba(0, 0, 0, 0.62);
+}
+
+.login-premium-btn--primary.semi-button:hover,
+.login-premium-btn.semi-button-theme-solid:hover {
+  background: #050505 !important;
+}
+
+.login-premium-card .semi-divider {
+  margin: 12px 0 !important;
+}
+
+.login-premium-card .semi-form-field-label-text {
+  font-weight: 600;
+  color: #202020;
+}
+
+.login-premium-card .semi-input-wrapper {
+  border-radius: 12px !important;
+  border-color: rgba(17, 17, 17, 0.15) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.login-premium-card .semi-input-wrapper:focus-within,
+.login-premium-card .semi-input-wrapper:hover {
+  border-color: rgba(17, 17, 17, 0.28) !important;
+}
+
+.login-premium-card .semi-checkbox-addon {
+  color: #555;
+}
+
+.login-premium-turnstile {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+@media (max-width: 767px) {
+  .login-premium-page {
+    padding: 14px 10px 12px;
+  }
+
+  .login-premium-shell {
+    margin-top: 42px;
+    max-width: 420px;
+  }
+
+  .login-premium-brand__name {
+    font-size: 26px !important;
+  }
+
+  .login-premium-title {
+    font-size: 26px !important;
+  }
+
+  .login-premium-card__body {
+    padding: 8px 10px 16px;
+  }
+
+  .login-premium-btn.semi-button {
+    min-height: 44px;
+  }
+}

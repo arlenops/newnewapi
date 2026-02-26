@@ -325,6 +325,68 @@ func HardDeleteUserById(id int) error {
 	return err
 }
 
+type InviteeEpayTopUpSummary struct {
+	InviteeId       int     `json:"invitee_id"`
+	Username        string  `json:"username"`
+	DisplayName     string  `json:"display_name"`
+	TotalTopUpMoney float64 `json:"total_topup_money"`
+	TopUpCount      int64   `json:"topup_count"`
+}
+
+func GetInviteeEpayTopUpSummaries(inviterId int, keyword string, pageInfo *common.PageInfo) (items []InviteeEpayTopUpSummary, total int64, totalTopUpMoney float64, err error) {
+	if inviterId <= 0 {
+		return nil, 0, 0, errors.New("inviter id 无效")
+	}
+	if pageInfo == nil {
+		return nil, 0, 0, errors.New("page info 为空")
+	}
+
+	baseQuery := DB.Model(&User{}).Where("inviter_id = ?", inviterId)
+	if keyword != "" {
+		like := "%" + keyword + "%"
+		baseQuery = baseQuery.Where("username LIKE ? OR display_name LIKE ?", like, like)
+	}
+
+	if err = baseQuery.Session(&gorm.Session{}).Count(&total).Error; err != nil {
+		return nil, 0, 0, err
+	}
+
+	epayAggQuery := DB.Model(&TopUp{}).
+		Select("user_id, COALESCE(SUM(money), 0) AS total_topup_money, COUNT(1) AS topup_count").
+		Where("status = ?", common.TopUpStatusSuccess).
+		Where("amount > ?", 0).
+		Where("trade_no LIKE ?", "USR%").
+		Group("user_id")
+
+	inviteeIdQuery := baseQuery.Session(&gorm.Session{}).Select("id")
+	if err = DB.Model(&TopUp{}).
+		Select("COALESCE(SUM(money), 0)").
+		Where("status = ?", common.TopUpStatusSuccess).
+		Where("amount > ?", 0).
+		Where("trade_no LIKE ?", "USR%").
+		Where("user_id IN (?)", inviteeIdQuery).
+		Scan(&totalTopUpMoney).Error; err != nil {
+		return nil, 0, 0, err
+	}
+
+	if total == 0 {
+		return []InviteeEpayTopUpSummary{}, 0, totalTopUpMoney, nil
+	}
+
+	items = make([]InviteeEpayTopUpSummary, 0, pageInfo.GetPageSize())
+	err = baseQuery.Session(&gorm.Session{}).
+		Select("id AS invitee_id, username, display_name, COALESCE(ep.total_topup_money, 0) AS total_topup_money, COALESCE(ep.topup_count, 0) AS topup_count").
+		Joins("LEFT JOIN (?) AS ep ON ep.user_id = id", epayAggQuery).
+		Order("id DESC").
+		Limit(pageInfo.GetPageSize()).
+		Offset(pageInfo.GetStartIdx()).
+		Scan(&items).Error
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	return items, total, totalTopUpMoney, nil
+}
+
 func inviteUser(inviterId int) (err error) {
 	user, err := GetUserById(inviterId, true)
 	if err != nil {

@@ -28,7 +28,13 @@ import {
   Space,
   Card,
 } from '@douyinfe/semi-ui';
-import { API, showError, showSuccess, timestamp2string } from '../../helpers';
+import {
+  API,
+  showError,
+  showSuccess,
+  timestamp2string,
+  setStatusData,
+} from '../../helpers';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 import { StatusContext } from '../../context/Status';
@@ -48,6 +54,9 @@ const OtherSetting = () => {
     Footer: '',
     About: '',
     HomePageContent: '',
+    HomeHeroTitlePrefix: '',
+    HomeHeroTitleMain: '',
+    HomeHeroSubtitle: '',
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -72,6 +81,19 @@ const OtherSetting = () => {
     setLoading(false);
   };
 
+  const refreshStatus = async () => {
+    try {
+      const res = await API.get('/api/status');
+      const { success, data } = res.data;
+      if (success) {
+        statusDispatch({ type: 'set', payload: data });
+        setStatusData(data);
+      }
+    } catch (error) {
+      // ignore refresh errors; option update already succeeded
+    }
+  };
+
   const [loadingInput, setLoadingInput] = useState({
     Notice: false,
     [LEGAL_USER_AGREEMENT_KEY]: false,
@@ -79,6 +101,9 @@ const OtherSetting = () => {
     SystemName: false,
     Logo: false,
     HomePageContent: false,
+    HomeHeroTitlePrefix: false,
+    HomeHeroTitleMain: false,
+    HomeHeroSubtitle: false,
     About: false,
     Footer: false,
     CheckUpdate: false,
@@ -187,17 +212,18 @@ const OtherSetting = () => {
     try {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
-        HomePageContent: true,
+        [key]: true,
       }));
       await updateOption(key, inputs[key]);
-      showSuccess('首页内容已更新');
+      showSuccess('配置已更新');
+      await refreshStatus();
     } catch (error) {
-      console.error('首页内容更新失败', error);
-      showError('首页内容更新失败');
+      console.error('配置更新失败', error);
+      showError('配置更新失败');
     } finally {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
-        HomePageContent: false,
+        [key]: false,
       }));
     }
   };
@@ -459,6 +485,42 @@ const OtherSetting = () => {
                 loading={loadingInput['HomePageContent']}
               >
                 {t('设置首页内容')}
+              </Button>
+              <Form.Input
+                label={t('首页主标题（上半句）')}
+                placeholder={t('留空则使用默认文案')}
+                field={'HomeHeroTitlePrefix'}
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={() => submitOption('HomeHeroTitlePrefix')}
+                loading={loadingInput['HomeHeroTitlePrefix']}
+              >
+                {t('设置首页主标题（上半句）')}
+              </Button>
+              <Form.Input
+                label={t('首页主标题（主句）')}
+                placeholder={t('留空则使用默认文案')}
+                field={'HomeHeroTitleMain'}
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={() => submitOption('HomeHeroTitleMain')}
+                loading={loadingInput['HomeHeroTitleMain']}
+              >
+                {t('设置首页主标题（主句）')}
+              </Button>
+              <Form.Input
+                label={t('首页主标题（副句）')}
+                placeholder={t('留空则使用默认文案')}
+                field={'HomeHeroSubtitle'}
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={() => submitOption('HomeHeroSubtitle')}
+                loading={loadingInput['HomeHeroSubtitle']}
+              >
+                {t('设置首页主标题（副句）')}
               </Button>
               <Form.TextArea
                 label={t('关于')}

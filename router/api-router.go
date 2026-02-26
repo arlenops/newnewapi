@@ -89,6 +89,7 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.POST("/stripe/amount", controller.RequestStripeAmount)
 				selfRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.RequestCreemPay)
 				selfRoute.POST("/aff_transfer", controller.TransferAffQuota)
+				selfRoute.GET("/invitees/topup", controller.GetInviteeEpayTopUpSummary)
 				selfRoute.PUT("/setting", controller.UpdateUserSetting)
 
 				// 2FA routes

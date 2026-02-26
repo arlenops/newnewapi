@@ -17,10 +17,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   Button,
-  Typography,
   Input,
   ScrollList,
   ScrollItem,
@@ -36,34 +35,11 @@ import {
   IconGithubLogo,
   IconPlay,
   IconFile,
-  IconCopy,
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
-import {
-  Moonshot,
-  OpenAI,
-  XAI,
-  Zhipu,
-  Volcengine,
-  Cohere,
-  Claude,
-  Gemini,
-  Suno,
-  Minimax,
-  Wenxin,
-  Spark,
-  Qingyan,
-  DeepSeek,
-  Qwen,
-  Midjourney,
-  Grok,
-  AzureAI,
-  Hunyuan,
-  Xinference,
-} from '@lobehub/icons';
-
-const { Text } = Typography;
+import { createHomeReviewBarrageRows } from './barragePrompts';
+import './home.css';
 
 const Home = () => {
   const { t, i18n } = useTranslation();
@@ -80,6 +56,19 @@ const Home = () => {
   const endpointItems = API_ENDPOINTS.map((e) => ({ value: e }));
   const [endpointIndex, setEndpointIndex] = useState(0);
   const isChinese = i18n.language.startsWith('zh');
+  const heroTitlePrefix =
+    statusState?.status?.home_hero_title_prefix || t('统一的');
+  const heroTitleMain =
+    statusState?.status?.home_hero_title_main || t('大模型接口网关');
+  const heroTitleSub =
+    statusState?.status?.home_hero_subtitle ||
+    t('更好的价格，更好的稳定性，只需要将模型基址替换为：');
+  const [typedHeroTitleMain, setTypedHeroTitleMain] = useState(heroTitleMain);
+  const [isHeroTitleTyping, setIsHeroTitleTyping] = useState(false);
+  const reviewBarrageRows = useMemo(
+    () => createHomeReviewBarrageRows({ rowCount: 2, sampleSize: 24 }),
+    [],
+  );
 
   const displayHomePageContent = async () => {
     setHomePageContent(localStorage.getItem('home_page_content') || '');
@@ -148,77 +137,179 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [endpointItems.length]);
 
+  useEffect(() => {
+    const rawTexts = [heroTitleMain, heroTitleSub]
+      .map((text) => (text || '').trim())
+      .filter(Boolean);
+    const loopTexts =
+      rawTexts.length > 1 && rawTexts[0] === rawTexts[1]
+        ? [rawTexts[0]]
+        : rawTexts;
+    const primaryText = loopTexts[0] || '';
+
+    const shouldReduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (shouldReduceMotion || loopTexts.length <= 1) {
+      const text = primaryText;
+      if (!text) {
+        setTypedHeroTitleMain('');
+        setIsHeroTitleTyping(false);
+        return;
+      }
+
+      const chars = Array.from(text);
+      const step = Math.max(
+        90,
+        Math.min(180, Math.floor(1500 / Math.max(chars.length, 1))),
+      );
+
+      let index = 0;
+      setTypedHeroTitleMain('');
+      setIsHeroTitleTyping(!shouldReduceMotion);
+
+      const timer = setInterval(() => {
+        index += 1;
+        setTypedHeroTitleMain(chars.slice(0, index).join(''));
+        if (index >= chars.length) {
+          clearInterval(timer);
+          setIsHeroTitleTyping(false);
+        }
+      }, step);
+
+      return () => clearInterval(timer);
+    }
+
+    let timeoutId = null;
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+    let stopped = false;
+
+    setTypedHeroTitleMain('');
+    setIsHeroTitleTyping(true);
+
+    const typeStep = (length) =>
+      Math.max(90, Math.min(180, Math.floor(1500 / Math.max(length, 1))));
+    const deleteStep = 90;
+    const holdTyped = 1200;
+    const holdEmpty = 360;
+
+    const schedule = (fn, ms) => {
+      timeoutId = setTimeout(fn, ms);
+    };
+
+    const tick = () => {
+      if (stopped) return;
+
+      const phrase = loopTexts[phraseIndex];
+      const chars = Array.from(phrase);
+
+      if (!deleting) {
+        charIndex += 1;
+        setTypedHeroTitleMain(chars.slice(0, charIndex).join(''));
+
+        if (charIndex >= chars.length) {
+          deleting = true;
+          schedule(tick, holdTyped);
+          return;
+        }
+
+        schedule(tick, typeStep(chars.length));
+        return;
+      }
+
+      charIndex -= 1;
+      setTypedHeroTitleMain(chars.slice(0, Math.max(charIndex, 0)).join(''));
+
+      if (charIndex <= 0) {
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % loopTexts.length;
+        schedule(tick, holdEmpty);
+        return;
+      }
+
+      schedule(tick, deleteStep);
+    };
+
+    schedule(tick, 320);
+
+    return () => {
+      stopped = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [heroTitleMain, heroTitleSub]);
+
   return (
-    <div className='w-full overflow-x-hidden'>
+    <div className='w-full overflow-x-hidden home-page-root'>
       <NoticeModal
         visible={noticeVisible}
         onClose={() => setNoticeVisible(false)}
         isMobile={isMobile}
       />
       {homePageContentLoaded && homePageContent === '' ? (
-        <div className='w-full overflow-x-hidden'>
-          {/* Banner 部分 */}
-          <div className='w-full border-b border-semi-color-border min-h-[500px] md:min-h-[600px] lg:min-h-[700px] relative overflow-x-hidden'>
-            {/* 背景模糊晕染球 */}
-            <div className='blur-ball blur-ball-indigo' />
-            <div className='blur-ball blur-ball-teal' />
-            <div className='flex items-center justify-center h-full px-4 py-20 md:py-24 lg:py-32 mt-10'>
-              {/* 居中内容区 */}
-              <div className='flex flex-col items-center justify-center text-center max-w-4xl mx-auto'>
-                <div className='flex flex-col items-center justify-center mb-6 md:mb-8'>
-                  <h1
-                    className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-semi-color-text-0 leading-tight ${isChinese ? 'tracking-wide md:tracking-wider' : ''}`}
+        <div className='home-premium'>
+          <div className='home-premium__orb home-premium__orb--left' />
+          <div className='home-premium__orb home-premium__orb--right' />
+          <div className='home-premium__grain' />
+
+          <div className='home-premium__container'>
+            <section className='home-premium__stage'>
+              <div className='home-premium__hero home-reveal' style={{ '--delay': '90ms' }}>
+                <h1
+                  className={`home-premium__title ${isChinese ? 'home-premium__title--cn' : ''}`}
+                >
+                  <span>{heroTitlePrefix}</span>
+                  <strong
+                    className='home-premium__title-main'
+                    data-typing={isHeroTitleTyping ? 'true' : 'false'}
                   >
-                    <>
-                      {t('统一的')}
-                      <br />
-                      <span className='shine-text'>{t('大模型接口网关')}</span>
-                    </>
-                  </h1>
-                  <p className='text-base md:text-lg lg:text-xl text-semi-color-text-1 mt-4 md:mt-6 max-w-xl'>
-                    {t('更好的价格，更好的稳定性，只需要将模型基址替换为：')}
-                  </p>
-                  {/* BASE URL 与端点选择 */}
-                  <div className='flex flex-col md:flex-row items-center justify-center gap-4 w-full mt-4 md:mt-6 max-w-md'>
-                    <Input
-                      readonly
-                      value={serverAddress}
-                      className='flex-1 !rounded-full'
-                      size={isMobile ? 'default' : 'large'}
-                      suffix={
-                        <div className='flex items-center gap-2'>
-                          <ScrollList
-                            bodyHeight={32}
-                            style={{ border: 'unset', boxShadow: 'unset' }}
-                          >
-                            <ScrollItem
-                              mode='wheel'
-                              cycled={true}
-                              list={endpointItems}
-                              selectedIndex={endpointIndex}
-                              onSelect={({ index }) => setEndpointIndex(index)}
-                            />
-                          </ScrollList>
-                          <Button
-                            type='primary'
-                            onClick={handleCopyBaseURL}
-                            icon={<IconCopy />}
-                            className='!rounded-full'
+                    {typedHeroTitleMain || '\u00a0'}
+                  </strong>
+                </h1>
+
+                <div className='home-premium__url-box home-reveal' style={{ '--delay': '180ms' }}>
+                  <div className='home-premium__url-label'>BASE URL</div>
+                  <Input
+                    readonly
+                    value={serverAddress}
+                    className='home-premium__input'
+                    size={isMobile ? 'default' : 'large'}
+                    suffix={
+                      <div className='home-premium__url-suffix'>
+                        <ScrollList
+                          bodyHeight={32}
+                          style={{ border: 'unset', boxShadow: 'unset' }}
+                        >
+                          <ScrollItem
+                            mode='wheel'
+                            cycled={true}
+                            list={endpointItems}
+                            selectedIndex={endpointIndex}
+                            onSelect={({ index }) => setEndpointIndex(index)}
                           />
-                        </div>
-                      }
-                    />
-                  </div>
+                        </ScrollList>
+                        <Button
+                          type='primary'
+                          onClick={handleCopyBaseURL}
+                          className='home-copy-btn'
+                        >
+                          start
+                        </Button>
+                      </div>
+                    }
+                  />
                 </div>
 
-                {/* 操作按钮 */}
-                <div className='flex flex-row gap-4 justify-center items-center'>
-                  <Link to='/console'>
+                <div className='home-premium__actions home-reveal' style={{ '--delay': '260ms' }}>
+                  <Link to='/token'>
                     <Button
                       theme='solid'
                       type='primary'
                       size={isMobile ? 'default' : 'large'}
-                      className='!rounded-3xl px-8 py-2'
+                      className='home-btn home-btn--primary'
                       icon={<IconPlay />}
                     >
                       {t('获取密钥')}
@@ -227,13 +318,10 @@ const Home = () => {
                   {isDemoSiteMode && statusState?.status?.version ? (
                     <Button
                       size={isMobile ? 'default' : 'large'}
-                      className='flex items-center !rounded-3xl px-6 py-2'
+                      className='home-btn home-btn--ghost'
                       icon={<IconGithubLogo />}
                       onClick={() =>
-                        window.open(
-                          'https://github.com/QuantumNous/new-api',
-                          '_blank',
-                        )
+                        window.open('https://github.com/QuantumNous/new-api', '_blank')
                       }
                     >
                       {statusState.status.version}
@@ -242,7 +330,7 @@ const Home = () => {
                     docsLink && (
                       <Button
                         size={isMobile ? 'default' : 'large'}
-                        className='flex items-center !rounded-3xl px-6 py-2'
+                        className='home-btn home-btn--ghost'
                         icon={<IconFile />}
                         onClick={() => window.open(docsLink, '_blank')}
                       >
@@ -252,86 +340,31 @@ const Home = () => {
                   )}
                 </div>
 
-                {/* 框架兼容性图标 */}
-                <div className='mt-12 md:mt-16 lg:mt-20 w-full'>
-                  <div className='flex items-center mb-6 md:mb-8 justify-center'>
-                    <Text
-                      type='tertiary'
-                      className='text-lg md:text-xl lg:text-2xl font-light'
+                <section
+                  className='home-premium__reviews home-reveal'
+                  style={{ '--delay': '320ms' }}
+                  aria-label='user-reviews'
+                >
+                  {reviewBarrageRows.map((row, rowIndex) => (
+                    <div
+                      key={`review-row-${rowIndex}`}
+                      className={`home-premium__reviews-row ${rowIndex % 2 === 1 ? 'home-premium__reviews-row--reverse' : ''}`}
                     >
-                      {t('支持众多的大模型供应商')}
-                    </Text>
-                  </div>
-                  <div className='flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto px-4'>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Moonshot size={40} />
+                      <div className='home-premium__reviews-track'>
+                        {[...row, ...row].map((review, index) => (
+                          <span
+                            key={`review-${rowIndex}-${index}`}
+                            className='home-premium__review-pill'
+                          >
+                            {review}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <OpenAI size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <XAI size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Zhipu.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Volcengine.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Cohere.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Claude.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Gemini.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Suno size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Minimax.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Wenxin.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Spark.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Qingyan.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <DeepSeek.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Qwen.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Midjourney size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Grok size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <AzureAI.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Hunyuan.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Xinference.Color size={40} />
-                    </div>
-                    <div className='w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center'>
-                      <Typography.Text className='!text-lg sm:!text-xl md:!text-2xl lg:!text-3xl font-bold'>
-                        30+
-                      </Typography.Text>
-                    </div>
-                  </div>
-                </div>
+                  ))}
+                </section>
               </div>
-            </div>
+            </section>
           </div>
         </div>
       ) : (

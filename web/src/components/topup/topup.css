@@ -1,0 +1,452 @@
+/*
+Copyright (C) 2025 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+
+.wallet-premium {
+  --wallet-text: #101010;
+  --wallet-muted: #5d5d5d;
+  --wallet-line: rgba(17, 17, 17, 0.14);
+  --wallet-line-strong: rgba(17, 17, 17, 0.24);
+  --semi-color-primary: #111111;
+  --semi-color-primary-hover: #050505;
+  --semi-color-primary-active: #000000;
+  --semi-color-primary-light-default: rgba(255, 255, 255, 0.82);
+  --semi-color-primary-light-hover: rgba(255, 255, 255, 0.9);
+  --semi-color-primary-light-active: rgba(246, 246, 246, 0.98);
+  --semi-color-focus-border: #111111;
+  --semi-color-link: #111111;
+  --semi-color-link-hover: #050505;
+  --semi-color-link-active: #000000;
+}
+
+.wallet-premium-page {
+  width: 100%;
+}
+
+.wallet-premium-page--standalone {
+  padding-top: calc(72px + env(safe-area-inset-top));
+}
+
+.wallet-premium-page--console {
+  padding-top: 8px;
+}
+
+.wallet-premium__main-card.semi-card,
+.wallet-premium__panel.semi-card {
+  border: 1px solid var(--wallet-line) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 248, 248, 0.96) 100%
+  ) !important;
+  box-shadow:
+    0 22px 36px -32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.wallet-premium__stats-cover {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(246, 247, 249, 0.94) 56%,
+    rgba(240, 242, 246, 0.92) 100%
+  );
+  border-bottom: 1px solid var(--wallet-line);
+}
+
+.wallet-premium__stats-title {
+  color: var(--wallet-text) !important;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+}
+
+.wallet-premium__stats-value {
+  color: var(--wallet-text);
+}
+
+.wallet-premium__stats-icon {
+  color: var(--wallet-muted);
+}
+
+.wallet-premium__stats-label {
+  color: var(--wallet-muted) !important;
+  font-size: 12px !important;
+}
+
+.wallet-premium__money {
+  color: #101010;
+  font-weight: 650;
+}
+
+.wallet-premium .semi-button {
+  border-radius: 999px !important;
+  border-color: rgba(17, 17, 17, 0.14) !important;
+  font-weight: 600;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) {
+  border-color: #111111 !important;
+  background: linear-gradient(180deg, #171717 0%, #0b0b0b 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 18px -14px rgba(0, 0, 0, 0.6);
+}
+
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless):hover {
+  border-color: #070707 !important;
+  background: #050505 !important;
+  transform: translateY(-1px);
+}
+
+.wallet-premium .semi-button.semi-button-primary.semi-button-light,
+.wallet-premium .semi-button.semi-button-primary.semi-button-outline {
+  border: 1px solid rgba(17, 17, 17, 0.14) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #111111 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.wallet-premium .semi-button.semi-button-primary.semi-button-light:hover,
+.wallet-premium .semi-button.semi-button-primary.semi-button-outline:hover {
+  border-color: rgba(17, 17, 17, 0.24) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #1f1f1f !important;
+}
+
+.wallet-premium .semi-button .semi-button-content svg,
+.wallet-premium .semi-button .semi-button-content .lucide,
+.wallet-premium .semi-button .semi-button-content [class^='si'],
+.wallet-premium .semi-button .semi-button-content [class*=' si'] {
+  color: #666666 !important;
+  opacity: 0.95;
+  fill: currentColor !important;
+}
+
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content svg,
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content .lucide,
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class^='si'],
+.wallet-premium .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class*=' si'] {
+  color: #ffffff !important;
+  opacity: 1;
+  fill: currentColor !important;
+}
+
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary {
+  border-color: #111111 !important;
+  background: linear-gradient(180deg, #171717 0%, #0b0b0b 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 18px -14px rgba(0, 0, 0, 0.6);
+}
+
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary .semi-button-content svg,
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary .semi-button-content .lucide,
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class^='si'],
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class*=' si'] {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+.wallet-premium .semi-button-theme-solid.semi-button-type-primary:hover {
+  border-color: #070707 !important;
+  background: #050505 !important;
+  transform: translateY(-1px);
+}
+
+.wallet-premium .semi-button-theme-outline,
+.wallet-premium .semi-button-theme-light {
+  border-color: rgba(17, 17, 17, 0.14) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #2a2a2a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.wallet-premium .semi-button-theme-borderless {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: #2a2a2a !important;
+  box-shadow: none !important;
+}
+
+.wallet-premium .semi-button-theme-outline.semi-button-type-primary,
+.wallet-premium .semi-button-theme-light.semi-button-type-primary {
+  border-color: rgba(17, 17, 17, 0.14) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #111111 !important;
+}
+
+.wallet-premium .semi-button-theme-outline:hover,
+.wallet-premium .semi-button-theme-light:hover,
+.wallet-premium .semi-button-theme-borderless:hover {
+  border-color: rgba(17, 17, 17, 0.24) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #1f1f1f !important;
+}
+
+.wallet-premium .semi-button-theme-borderless:hover {
+  border-color: transparent !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+.wallet-premium .semi-button.semi-button-disabled,
+.wallet-premium .semi-button:disabled {
+  border-color: rgba(17, 17, 17, 0.1) !important;
+  background: rgba(241, 241, 241, 0.92) !important;
+  color: #8a8a8a !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.wallet-premium .semi-button.semi-button-disabled:hover,
+.wallet-premium .semi-button:disabled:hover {
+  border-color: rgba(17, 17, 17, 0.1) !important;
+  background: rgba(241, 241, 241, 0.92) !important;
+}
+
+.wallet-premium .wallet-premium__pay-method-btn {
+  min-width: 110px;
+  border-radius: 999px !important;
+}
+
+.wallet-premium .wallet-premium__bill-btn,
+.wallet-premium .wallet-premium__action-btn,
+.wallet-premium .wallet-premium__subscribe-btn {
+  border-radius: 999px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  min-height: 34px;
+}
+
+.wallet-premium .semi-button.semi-button-with-icon-only {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button .semi-button-content svg,
+body.wallet-premium-active .semi-modal .semi-button .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal .semi-button .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal .semi-button .semi-button-content [class*=' si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button .semi-button-content svg,
+body.wallet-premium-active .semi-modal-confirm .semi-button .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal-confirm .semi-button .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button .semi-button-content [class*=' si'] {
+  color: #666666 !important;
+  opacity: 0.95;
+  fill: currentColor !important;
+}
+
+body.wallet-premium-active .semi-modal,
+body.wallet-premium-active .semi-modal-confirm {
+  --semi-color-primary: #111111;
+  --semi-color-primary-hover: #050505;
+  --semi-color-primary-active: #000000;
+  --semi-color-primary-light-default: rgba(255, 255, 255, 0.82);
+  --semi-color-primary-light-hover: rgba(255, 255, 255, 0.9);
+  --semi-color-primary-light-active: rgba(246, 246, 246, 0.98);
+  --semi-color-focus-border: #111111;
+}
+
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless),
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) {
+  border-color: #111111 !important;
+  background: linear-gradient(180deg, #171717 0%, #0b0b0b 100%) !important;
+  color: #ffffff !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content svg,
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class*=' si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content svg,
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless) .semi-button-content [class*=' si'] {
+  color: #ffffff !important;
+  opacity: 1;
+  fill: currentColor !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless):hover,
+body.wallet-premium-active .semi-modal-confirm .semi-button.semi-button-primary:not(.semi-button-light):not(.semi-button-outline):not(.semi-button-borderless):hover {
+  border-color: #070707 !important;
+  background: #050505 !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary {
+  border-color: #111111 !important;
+  background: linear-gradient(180deg, #171717 0%, #0b0b0b 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 18px -14px rgba(0, 0, 0, 0.6);
+}
+
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary:hover,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary:hover {
+  border-color: #070707 !important;
+  background: #050505 !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary .semi-button-content svg,
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class*=' si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary .semi-button-content svg,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary .semi-button-content .lucide,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class^='si'],
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-solid.semi-button-type-primary .semi-button-content [class*=' si'] {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+body.wallet-premium-active .semi-modal .semi-button-theme-outline,
+body.wallet-premium-active .semi-modal .semi-button-theme-light,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-outline,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-light {
+  border-color: rgba(17, 17, 17, 0.14) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #111111 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+body.wallet-premium-active .semi-modal .semi-button-theme-outline:hover,
+body.wallet-premium-active .semi-modal .semi-button-theme-light:hover,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-outline:hover,
+body.wallet-premium-active .semi-modal-confirm .semi-button-theme-light:hover {
+  border-color: rgba(17, 17, 17, 0.24) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #1f1f1f !important;
+}
+
+.wallet-premium .semi-input-wrapper,
+.wallet-premium .semi-input-number-wrapper,
+.wallet-premium .semi-select .semi-select-selection {
+  border-color: var(--wallet-line) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.wallet-premium .semi-input-wrapper:hover,
+.wallet-premium .semi-input-number-wrapper:hover,
+.wallet-premium .semi-select:hover .semi-select-selection {
+  border-color: var(--wallet-line-strong) !important;
+}
+
+.wallet-premium .semi-input-wrapper-focus,
+.wallet-premium .semi-input-number-wrapper-focus,
+.wallet-premium .semi-select-focus .semi-select-selection,
+.wallet-premium .semi-input-wrapper:focus-within,
+.wallet-premium .semi-input-number-wrapper:focus-within {
+  border-color: #111111 !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+.wallet-premium .wallet-premium__tabs .semi-tabs-tab {
+  border-radius: 10px !important;
+  border: 1px solid var(--wallet-line) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: #2b2b2b !important;
+}
+
+.wallet-premium .wallet-premium__tabs .semi-tabs-tab-active {
+  border-color: #111111 !important;
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+.wallet-premium .wallet-premium__tabs .semi-tabs-content {
+  padding-top: 8px;
+}
+
+.wallet-premium .semi-tag {
+  border: 1px solid var(--wallet-line) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #383838 !important;
+}
+
+.wallet-premium .semi-badge-dot,
+.wallet-premium .semi-badge-status-dot,
+.wallet-premium .semi-badge-status-dot::before {
+  background: #444444 !important;
+}
+
+.wallet-premium .wallet-premium__preset-card.semi-card,
+.wallet-premium .wallet-premium__creem-card.semi-card,
+.wallet-premium .wallet-premium__subscription-card.semi-card {
+  border: 1px solid var(--wallet-line) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(249, 249, 249, 0.9) 100%
+  ) !important;
+  box-shadow:
+    0 16px 24px -24px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+}
+
+.wallet-premium .wallet-premium__preset-card.semi-card:hover,
+.wallet-premium .wallet-premium__creem-card.semi-card:hover,
+.wallet-premium .wallet-premium__subscription-card.semi-card:hover {
+  border-color: var(--wallet-line-strong) !important;
+  transform: translateY(-1px);
+}
+
+.wallet-premium .wallet-premium__subscription-card--popular.semi-card {
+  border: 1.5px solid #111111 !important;
+  box-shadow:
+    0 24px 32px -24px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.1) inset !important;
+}
+
+.wallet-premium .semi-banner {
+  border-radius: 12px !important;
+  border: 1px dashed var(--wallet-line) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.wallet-premium .semi-table-container {
+  border: 1px solid var(--wallet-line) !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.wallet-premium .semi-table-thead > .semi-table-row > .semi-table-row-head {
+  background: rgba(246, 246, 246, 0.92) !important;
+  color: #2f2f2f;
+}
+
+.wallet-premium .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.wallet-premium .semi-table-tbody > .semi-table-row:hover > .semi-table-row-cell {
+  background: rgba(248, 248, 248, 0.96) !important;
+}
+
+@media (max-width: 900px) {
+  .wallet-premium {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}

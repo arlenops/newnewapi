@@ -192,7 +192,7 @@ const SubscriptionPurchaseModal = ({
                     <Button
                       theme='light'
                       className='flex-1'
-                      icon={<SiStripe size={14} color='#635BFF' />}
+                      icon={<SiStripe size={14} />}
                       onClick={onPayStripe}
                       loading={paying}
                       disabled={purchaseLimitReached}

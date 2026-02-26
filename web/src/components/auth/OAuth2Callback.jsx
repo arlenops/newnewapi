@@ -65,7 +65,7 @@ const OAuth2Callback = (props) => {
         setUserData(data);
         updateAPI();
         showSuccess(t('登录成功！'));
-        navigate('/console/token');
+        navigate('/');
       }
     } catch (error) {
       // 网络错误等可重试

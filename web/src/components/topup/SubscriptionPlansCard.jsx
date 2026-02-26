@@ -520,8 +520,8 @@ const SubscriptionPlansCard = ({
                 return (
                   <Card
                     key={plan?.id}
-                    className={`!rounded-xl transition-all hover:shadow-lg w-full h-full ${
-                      isPopular ? 'ring-2 ring-purple-500' : ''
+                    className={`wallet-premium__subscription-card !rounded-xl transition-all hover:shadow-lg w-full h-full ${
+                      isPopular ? 'wallet-premium__subscription-card--popular' : ''
                     }`}
                     bodyStyle={{ padding: 0 }}
                   >
@@ -529,7 +529,7 @@ const SubscriptionPlansCard = ({
                       {/* 推荐标签 */}
                       {isPopular && (
                         <div className='mb-2'>
-                          <Tag color='purple' shape='circle' size='small'>
+                          <Tag color='grey' shape='circle' size='small'>
                             <Sparkles size={10} className='mr-1' />
                             {t('推荐')}
                           </Tag>
@@ -559,10 +559,10 @@ const SubscriptionPlansCard = ({
                       {/* 价格区域 */}
                       <div className='py-2'>
                         <div className='flex items-baseline justify-start'>
-                          <span className='text-xl font-bold text-purple-600'>
+                          <span className='text-xl font-bold text-neutral-900'>
                             {symbol}
                           </span>
-                          <span className='text-3xl font-bold text-purple-600'>
+                          <span className='text-3xl font-bold text-neutral-900'>
                             {displayPrice}
                           </span>
                         </div>
@@ -611,6 +611,7 @@ const SubscriptionPlansCard = ({
                             <Button
                               theme='outline'
                               type='primary'
+                              className='wallet-premium__subscribe-btn'
                               block
                               disabled={reached}
                               onClick={() => {
@@ -647,7 +648,7 @@ const SubscriptionPlansCard = ({
   return (
     <>
       {withCard ? (
-        <Card className='!rounded-2xl shadow-sm border-0'>{cardContent}</Card>
+        <Card className='wallet-premium__panel !rounded-2xl shadow-sm border-0'>{cardContent}</Card>
       ) : (
         <div className='space-y-3'>{cardContent}</div>
       )}
