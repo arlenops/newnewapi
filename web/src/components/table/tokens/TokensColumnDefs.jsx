@@ -312,7 +312,9 @@ const renderOperations = (
   refresh,
   t,
 ) => {
-  const apiKey = record.key;
+  const apiKey = record.key.startsWith('sk-')
+    ? record.key
+    : `sk-${record.key}`;
   const onlineUseUrl = (() => {
     const settings = {
       keyVaults: {
