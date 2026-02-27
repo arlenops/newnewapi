@@ -312,7 +312,7 @@ const renderOperations = (
   refresh,
   t,
 ) => {
-  const apiKey = `sk-${record.key}`;
+  const apiKey = record.key;
   const onlineUseUrl = (() => {
     const settings = {
       keyVaults: {
@@ -321,7 +321,7 @@ const renderOperations = (
         },
       },
     };
-    const url = new URL('https://oioiart.com/');
+    const url = new URL('https://open.oioiart.com/');
     url.searchParams.set('settings', JSON.stringify(settings));
     return url.toString();
   })();
