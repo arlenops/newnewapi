@@ -312,7 +312,7 @@ const Home = () => {
                       className='home-btn home-btn--primary'
                       icon={<IconPlay />}
                     >
-                      {t('获取密钥')}
+                      {t('立即开始')}
                     </Button>
                   </Link>
                   {isDemoSiteMode && statusState?.status?.version ? (
@@ -334,7 +334,7 @@ const Home = () => {
                         icon={<IconFile />}
                         onClick={() => window.open(docsLink, '_blank')}
                       >
-                        {t('文档')}
+                        {t('使用文档')}
                       </Button>
                     )
                   )}

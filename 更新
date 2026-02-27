@@ -1,0 +1,5 @@
+git fetch upstream
+git checkout codex/upstream-main
+git merge --ff-only upstream/main
+git checkout codex/custom-main
+git merge codex/upstream-main

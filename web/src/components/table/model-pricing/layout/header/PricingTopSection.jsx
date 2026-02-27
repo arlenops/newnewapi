@@ -36,16 +36,6 @@ const PricingTopSection = memo(
     filteredModels,
     loading,
     searchValue,
-    showWithRecharge,
-    setShowWithRecharge,
-    currency,
-    setCurrency,
-    showRatio,
-    setShowRatio,
-    viewMode,
-    setViewMode,
-    tokenUnit,
-    setTokenUnit,
     t,
   }) => {
     const [showFilterModal, setShowFilterModal] = useState(false);
@@ -64,16 +54,6 @@ const PricingTopSection = memo(
                 isMobile={isMobile}
                 searchValue={searchValue}
                 setShowFilterModal={setShowFilterModal}
-                showWithRecharge={showWithRecharge}
-                setShowWithRecharge={setShowWithRecharge}
-                currency={currency}
-                setCurrency={setCurrency}
-                showRatio={showRatio}
-                setShowRatio={setShowRatio}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-                tokenUnit={tokenUnit}
-                setTokenUnit={setTokenUnit}
                 t={t}
               />
             </div>
@@ -99,16 +79,6 @@ const PricingTopSection = memo(
             isMobile={isMobile}
             searchValue={searchValue}
             setShowFilterModal={setShowFilterModal}
-            showWithRecharge={showWithRecharge}
-            setShowWithRecharge={setShowWithRecharge}
-            currency={currency}
-            setCurrency={setCurrency}
-            showRatio={showRatio}
-            setShowRatio={setShowRatio}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            tokenUnit={tokenUnit}
-            setTokenUnit={setTokenUnit}
           />
         )}
       </>

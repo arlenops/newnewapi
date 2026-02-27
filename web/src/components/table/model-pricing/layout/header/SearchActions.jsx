@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { memo, useCallback } from 'react';
-import { Input, Button, Switch, Select, Divider } from '@douyinfe/semi-ui';
+import { Input, Button } from '@douyinfe/semi-ui';
 import { IconSearch, IconCopy, IconFilter } from '@douyinfe/semi-icons';
 
 const SearchActions = memo(
@@ -31,16 +31,6 @@ const SearchActions = memo(
     isMobile = false,
     searchValue = '',
     setShowFilterModal,
-    showWithRecharge,
-    setShowWithRecharge,
-    currency,
-    setCurrency,
-    showRatio,
-    setShowRatio,
-    viewMode,
-    setViewMode,
-    tokenUnit,
-    setTokenUnit,
     t,
   }) => {
     const handleCopyClick = useCallback(() => {
@@ -52,14 +42,6 @@ const SearchActions = memo(
     const handleFilterClick = useCallback(() => {
       setShowFilterModal?.(true);
     }, [setShowFilterModal]);
-
-    const handleViewModeToggle = useCallback(() => {
-      setViewMode?.(viewMode === 'table' ? 'card' : 'table');
-    }, [viewMode, setViewMode]);
-
-    const handleTokenUnitToggle = useCallback(() => {
-      setTokenUnit?.(tokenUnit === 'K' ? 'M' : 'K');
-    }, [tokenUnit, setTokenUnit]);
 
     return (
       <div className='market-premium__search-actions flex items-center gap-2 w-full'>
@@ -86,65 +68,6 @@ const SearchActions = memo(
         >
           {t('复制')}
         </Button>
-
-        {!isMobile && (
-          <>
-            <Divider layout='vertical' margin='8px' />
-
-            {/* 充值价格显示开关 */}
-            <div className='flex items-center gap-2'>
-              <span className='market-premium__action-label text-sm text-gray-600'>
-                {t('充值价格显示')}
-              </span>
-              <Switch
-                checked={showWithRecharge}
-                onChange={setShowWithRecharge}
-              />
-            </div>
-
-            {/* 货币单位选择 */}
-            {showWithRecharge && (
-              <Select
-                className='market-premium__currency-select'
-                value={currency}
-                onChange={setCurrency}
-                optionList={[
-                  { value: 'USD', label: 'USD' },
-                  { value: 'CNY', label: 'CNY' },
-                  { value: 'CUSTOM', label: t('自定义货币') },
-                ]}
-              />
-            )}
-
-            {/* 显示倍率开关 */}
-            <div className='flex items-center gap-2'>
-              <span className='market-premium__action-label text-sm text-gray-600'>
-                {t('倍率')}
-              </span>
-              <Switch checked={showRatio} onChange={setShowRatio} />
-            </div>
-
-            {/* 视图模式切换按钮 */}
-            <Button
-              className='market-premium__action-toggle'
-              theme={viewMode === 'table' ? 'solid' : 'outline'}
-              type={viewMode === 'table' ? 'primary' : 'tertiary'}
-              onClick={handleViewModeToggle}
-            >
-              {t('表格视图')}
-            </Button>
-
-            {/* Token单位切换按钮 */}
-            <Button
-              className='market-premium__action-toggle'
-              theme={tokenUnit === 'K' ? 'solid' : 'outline'}
-              type={tokenUnit === 'K' ? 'primary' : 'tertiary'}
-              onClick={handleTokenUnitToggle}
-            >
-              {tokenUnit}
-            </Button>
-          </>
-        )}
 
         {isMobile && (
           <Button

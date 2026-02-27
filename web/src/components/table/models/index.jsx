@@ -161,7 +161,7 @@ const ModelsPage = () => {
         type='type3'
         tabsArea={<ModelsTabs {...modelsData} />}
         actionsArea={
-          <div className='flex flex-col md:flex-row justify-between items-center gap-2 w-full'>
+          <div className='flex flex-col md:flex-row justify-between items-start gap-2 w-full'>
             <ModelsActions
               selectedKeys={selectedKeys}
               setSelectedKeys={setSelectedKeys}

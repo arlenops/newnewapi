@@ -19,7 +19,8 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useRef } from 'react';
 import { Form, Button } from '@douyinfe/semi-ui';
-import { IconSearch } from '@douyinfe/semi-icons';
+import { IconFilter, IconSearch } from '@douyinfe/semi-icons';
+import './models-filters.css';
 
 const ModelsFilters = ({
   formInitValues,
@@ -53,50 +54,60 @@ const ModelsFilters = ({
       layout='horizontal'
       trigger='change'
       stopValidateWithError={false}
-      className='w-full md:w-auto order-1 md:order-2'
+      className='models-filters-form w-full md:w-auto order-1 md:order-2'
     >
-      <div className='flex flex-col md:flex-row items-center gap-2 w-full md:w-auto'>
-        <div className='relative w-full md:w-56'>
-          <Form.Input
-            field='searchKeyword'
-            prefix={<IconSearch />}
-            placeholder={t('搜索模型名称')}
-            showClear
-            pure
-            size='small'
-          />
+      <div className='models-filters-panel'>
+        <div className='models-filters-header'>
+          <span className='models-filters-title'>
+            <IconFilter size='small' />
+            {t('筛选条件')}
+          </span>
+          <span className='models-filters-hint'>{t('支持组合查询')}</span>
         </div>
 
-        <div className='relative w-full md:w-56'>
-          <Form.Input
-            field='searchVendor'
-            prefix={<IconSearch />}
-            placeholder={t('搜索供应商')}
-            showClear
-            pure
-            size='small'
-          />
-        </div>
+        <div className='models-filters-grid'>
+          <div className='relative w-full md:w-60'>
+            <Form.Input
+              field='searchKeyword'
+              prefix={<IconSearch />}
+              placeholder={t('搜索模型名称')}
+              showClear
+              className='models-filters-input'
+              size='small'
+            />
+          </div>
 
-        <div className='flex gap-2 w-full md:w-auto'>
-          <Button
-            type='tertiary'
-            htmlType='submit'
-            loading={loading || searching}
-            className='flex-1 md:flex-initial md:w-auto'
-            size='small'
-          >
-            {t('查询')}
-          </Button>
+          <div className='relative w-full md:w-52'>
+            <Form.Input
+              field='searchVendor'
+              prefix={<IconSearch />}
+              placeholder={t('搜索供应商')}
+              showClear
+              className='models-filters-input'
+              size='small'
+            />
+          </div>
 
-          <Button
-            type='tertiary'
-            onClick={handleReset}
-            className='flex-1 md:flex-initial md:w-auto'
-            size='small'
-          >
-            {t('重置')}
-          </Button>
+          <div className='models-filters-actions'>
+            <Button
+              type='primary'
+              htmlType='submit'
+              loading={loading || searching}
+              className='models-filters-submit'
+              size='small'
+            >
+              {t('查询')}
+            </Button>
+
+            <Button
+              type='tertiary'
+              onClick={handleReset}
+              className='models-filters-reset'
+              size='small'
+            >
+              {t('重置')}
+            </Button>
+          </div>
         </div>
       </div>
     </Form>

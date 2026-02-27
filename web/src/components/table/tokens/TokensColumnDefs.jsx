@@ -323,7 +323,7 @@ const renderOperations = (
         },
       },
     };
-    const url = new URL('https://open.oioiart.com/');
+    const url = new URL('https://open.oioiart.com/painting');
     url.searchParams.set('settings', JSON.stringify(settings));
     return url.toString();
   })();

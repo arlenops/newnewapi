@@ -28,7 +28,7 @@ import './market.css';
 
 const PricingPage = () => {
   const pricingData = useModelPricingData();
-  const { Sider, Content } = Layout;
+  const { Content } = Layout;
   const isMobile = useIsMobile();
   const [showRatio, setShowRatio] = React.useState(false);
   const [viewMode, setViewMode] = React.useState('card');
@@ -41,19 +41,14 @@ const PricingPage = () => {
   };
 
   return (
-    <div className='market-premium'>
-      <div className='market-premium__aurora market-premium__aurora--blue' />
-      <div className='market-premium__aurora market-premium__aurora--mint' />
-      <div className='market-premium__aurora market-premium__aurora--violet' />
-      <div className='market-premium__dots' />
-
-      <Layout className='pricing-layout market-premium__layout'>
+    <div className='market-premium w-full max-w-[1600px] mx-auto px-3 md:px-5 xl:px-8'>
+      <Layout className='pricing-layout pricing-layout--stacked market-premium__layout'>
         {!isMobile && (
-          <Sider className='pricing-scroll-hide pricing-sidebar market-premium__sidebar-shell'>
-            <div className='market-premium__sidebar-inner'>
+          <div className='pricing-scroll-hide pricing-sidebar market-premium__sidebar-shell market-premium__sidebar-shell--top'>
+            <div className='market-premium__sidebar-inner pricing-scroll-hide'>
               <PricingSidebar {...allProps} />
             </div>
-          </Sider>
+          </div>
         )}
 
         <Content className='pricing-scroll-hide pricing-content market-premium__content-shell'>

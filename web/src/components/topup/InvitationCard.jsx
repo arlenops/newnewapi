@@ -68,7 +68,9 @@ const InvitationCard = ({
       key: 'total_topup_money',
       render: (money) => {
         const amount = Number(money || 0);
-        return <Text className='wallet-premium__money'>¥{amount.toFixed(2)}</Text>;
+        return (
+          <Text className='wallet-premium__money'>¥{amount.toFixed(2)}</Text>
+        );
       },
     },
     {
@@ -132,14 +134,14 @@ const InvitationCard = ({
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('邀请明细仅统计易支付的成功充值记录，金额为累计充值金额')}
+                {t('下方邀请信息可查看邀请好友的充值明细')}
               </Text>
             </div>
 
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('分成比例由老板与代理线下协商，平台仅提供邀请数据展示')}
+                {t('如需发票报销，请联系客服微信：gptai6')}
               </Text>
             </div>
           </div>
@@ -152,7 +154,9 @@ const InvitationCard = ({
           <div className='mb-3'>
             <Text type='tertiary'>
               {t('总充值金额')}：
-              <Text className='wallet-premium__money'>¥{Number(inviteeTopupTotalMoney || 0).toFixed(2)}</Text>
+              <Text className='wallet-premium__money'>
+                ¥{Number(inviteeTopupTotalMoney || 0).toFixed(2)}
+              </Text>
             </Text>
           </div>
           <div className='mb-3'>

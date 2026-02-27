@@ -18,7 +18,6 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import PricingDisplaySettings from '../../filter/PricingDisplaySettings';
 import PricingGroups from '../../filter/PricingGroups';
 import PricingQuotaTypes from '../../filter/PricingQuotaTypes';
 import PricingEndpointTypes from '../../filter/PricingEndpointTypes';
@@ -28,16 +27,6 @@ import { usePricingFilterCounts } from '../../../../../hooks/model-pricing/usePr
 
 const FilterModalContent = ({ sidebarProps, t }) => {
   const {
-    showWithRecharge,
-    setShowWithRecharge,
-    currency,
-    setCurrency,
-    handleChange,
-    setActiveKey,
-    showRatio,
-    setShowRatio,
-    viewMode,
-    setViewMode,
     filterGroup,
     setFilterGroup,
     filterQuotaType,
@@ -48,8 +37,6 @@ const FilterModalContent = ({ sidebarProps, t }) => {
     setFilterVendor,
     filterTag,
     setFilterTag,
-    tokenUnit,
-    setTokenUnit,
     loading,
     ...categoryProps
   } = sidebarProps;
@@ -72,21 +59,6 @@ const FilterModalContent = ({ sidebarProps, t }) => {
 
   return (
     <>
-      <PricingDisplaySettings
-        showWithRecharge={showWithRecharge}
-        setShowWithRecharge={setShowWithRecharge}
-        currency={currency}
-        setCurrency={setCurrency}
-        showRatio={showRatio}
-        setShowRatio={setShowRatio}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        tokenUnit={tokenUnit}
-        setTokenUnit={setTokenUnit}
-        loading={loading}
-        t={t}
-      />
-
       <PricingVendors
         filterVendor={filterVendor}
         setFilterVendor={setFilterVendor}
