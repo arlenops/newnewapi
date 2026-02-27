@@ -1,13 +1,15 @@
 .market-premium {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   background: #ffffff;
 }
 
 .market-premium__layout {
   position: relative;
   z-index: 1;
+  overflow: visible !important;
   background: transparent !important;
 }
 
