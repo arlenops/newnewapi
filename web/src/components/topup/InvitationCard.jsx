@@ -127,7 +127,7 @@ const InvitationCard = ({
             <div className='flex items-start gap-2'>
               <Badge dot type='success' />
               <Text type='tertiary' className='text-sm'>
-                {t('通过邀请链接邀请好友注册，邀请明细可在下方查看')}
+                {t('通过邀请链接邀请好友注册，可得部分返现或额度激励')}
               </Text>
             </div>
 

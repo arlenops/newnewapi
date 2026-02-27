@@ -963,8 +963,9 @@ html.dark .with-pastel-balls::before {
 
 /* ==================== 模型定价页面布局 ==================== */
 .pricing-layout {
-  height: calc(100vh - 60px);
-  overflow: hidden;
+  min-height: calc(100vh - 60px);
+  height: auto;
+  overflow: visible;
   margin-top: 60px;
 }
 
@@ -972,16 +973,18 @@ html.dark .with-pastel-balls::before {
   width: clamp(280px, 24vw, 520px) !important;
   min-width: clamp(280px, 24vw, 520px) !important;
   max-width: clamp(280px, 24vw, 520px) !important;
-  height: calc(100vh - 60px);
+  height: auto;
   background-color: var(--semi-color-bg-0);
-  overflow: auto;
+  overflow: visible;
 }
 
 .pricing-content {
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
+  height: auto;
   background-color: var(--semi-color-bg-0);
   display: flex;
   flex-direction: column;
+  overflow: visible;
 }
 
 .pricing-pagination-divider {
@@ -989,10 +992,11 @@ html.dark .with-pastel-balls::before {
 }
 
 .pricing-content-mobile {
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: visible;
 }
 
 .pricing-search-header {
@@ -1005,13 +1009,14 @@ html.dark .with-pastel-balls::before {
 }
 
 .pricing-view-container {
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  overflow: visible;
+  min-height: 0;
 }
 
 .pricing-view-container-mobile {
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  overflow: visible;
   min-height: 0;
 }
 
