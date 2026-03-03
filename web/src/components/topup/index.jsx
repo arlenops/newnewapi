@@ -96,6 +96,12 @@ const TopUp = () => {
   const [inviteeTopupKeyword, setInviteeTopupKeyword] = useState('');
   const [inviteeTopupLoading, setInviteeTopupLoading] = useState(false);
   const [inviteeTopupTotalMoney, setInviteeTopupTotalMoney] = useState(0);
+  const [inviteeWalletTopupTotalMoney, setInviteeWalletTopupTotalMoney] =
+    useState(0);
+  const [
+    inviteeSubscriptionTopupTotalMoney,
+    setInviteeSubscriptionTopupTotalMoney,
+  ] = useState(0);
 
   // 账单Modal状态
   const [openHistory, setOpenHistory] = useState(false);
@@ -535,16 +541,24 @@ const TopUp = () => {
       if (success) {
         setInviteeTopupItems(data.items || []);
         setInviteeTopupTotal(data.total || 0);
+        setInviteeWalletTopupTotalMoney(Number(data.wallet_topup_money || 0));
+        setInviteeSubscriptionTopupTotalMoney(
+          Number(data.subscription_topup_money || 0),
+        );
         setInviteeTopupTotalMoney(Number(data.total_topup_money || 0));
       } else {
         setInviteeTopupItems([]);
         setInviteeTopupTotal(0);
+        setInviteeWalletTopupTotalMoney(0);
+        setInviteeSubscriptionTopupTotalMoney(0);
         setInviteeTopupTotalMoney(0);
         showError(message);
       }
     } catch (error) {
       setInviteeTopupItems([]);
       setInviteeTopupTotal(0);
+      setInviteeWalletTopupTotalMoney(0);
+      setInviteeSubscriptionTopupTotalMoney(0);
       setInviteeTopupTotalMoney(0);
       showError(t('加载失败'));
     } finally {
@@ -850,6 +864,10 @@ const TopUp = () => {
           inviteeTopupKeyword={inviteeTopupKeyword}
           inviteeTopupLoading={inviteeTopupLoading}
           inviteeTopupTotalMoney={inviteeTopupTotalMoney}
+          inviteeWalletTopupTotalMoney={inviteeWalletTopupTotalMoney}
+          inviteeSubscriptionTopupTotalMoney={
+            inviteeSubscriptionTopupTotalMoney
+          }
           setInviteeTopupPage={setInviteeTopupPage}
           setInviteeTopupPageSize={setInviteeTopupPageSize}
           setInviteeTopupKeyword={setInviteeTopupKeyword}

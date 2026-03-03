@@ -44,10 +44,24 @@ const InvitationCard = ({
   inviteeTopupKeyword,
   inviteeTopupLoading,
   inviteeTopupTotalMoney,
+  inviteeWalletTopupTotalMoney,
+  inviteeSubscriptionTopupTotalMoney,
   setInviteeTopupPage,
   setInviteeTopupPageSize,
   setInviteeTopupKeyword,
 }) => {
+  const renderMoneyWithCount = (money, count) => {
+    const amount = Number(money || 0);
+    return (
+      <div className='flex flex-col'>
+        <Text className='wallet-premium__money'>¥{amount.toFixed(2)}</Text>
+        <Text type='tertiary' className='text-xs'>
+          {t('次数')}：{count || 0}
+        </Text>
+      </div>
+    );
+  };
+
   const inviteeColumns = [
     {
       title: t('用户'),
@@ -63,21 +77,21 @@ const InvitationCard = ({
       ),
     },
     {
-      title: t('支付金额'),
-      dataIndex: 'total_topup_money',
-      key: 'total_topup_money',
-      render: (money) => {
-        const amount = Number(money || 0);
-        return (
-          <Text className='wallet-premium__money'>¥{amount.toFixed(2)}</Text>
-        );
-      },
+      title: t('钱包充值'),
+      dataIndex: 'wallet_topup_money',
+      key: 'wallet_topup_money',
+      render: (_, record) =>
+        renderMoneyWithCount(record.wallet_topup_money, record.wallet_topup_count),
     },
     {
-      title: t('请求次数'),
-      dataIndex: 'topup_count',
-      key: 'topup_count',
-      render: (count) => count || 0,
+      title: t('套餐订阅'),
+      dataIndex: 'subscription_topup_money',
+      key: 'subscription_topup_money',
+      render: (_, record) =>
+        renderMoneyWithCount(
+          record.subscription_topup_money,
+          record.subscription_topup_count,
+        ),
     },
   ];
 
@@ -151,13 +165,37 @@ const InvitationCard = ({
           className='wallet-premium__panel !rounded-xl w-full'
           title={<Text type='tertiary'>{t('邀请信息')}</Text>}
         >
-          <div className='mb-3'>
-            <Text type='tertiary'>
-              {t('总充值金额')}：
-              <Text className='wallet-premium__money'>
-                ¥{Number(inviteeTopupTotalMoney || 0).toFixed(2)}
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3'>
+            <div className='rounded-lg bg-gray-50 px-3 py-2'>
+              <Text type='tertiary' className='text-xs'>
+                {t('钱包充值金额')}
               </Text>
-            </Text>
+              <div>
+                <Text className='wallet-premium__money'>
+                  ¥{Number(inviteeWalletTopupTotalMoney || 0).toFixed(2)}
+                </Text>
+              </div>
+            </div>
+            <div className='rounded-lg bg-gray-50 px-3 py-2'>
+              <Text type='tertiary' className='text-xs'>
+                {t('套餐订阅金额')}
+              </Text>
+              <div>
+                <Text className='wallet-premium__money'>
+                  ¥{Number(inviteeSubscriptionTopupTotalMoney || 0).toFixed(2)}
+                </Text>
+              </div>
+            </div>
+            <div className='rounded-lg bg-gray-50 px-3 py-2'>
+              <Text type='tertiary' className='text-xs'>
+                {t('合计金额')}
+              </Text>
+              <div>
+                <Text className='wallet-premium__money'>
+                  ¥{Number(inviteeTopupTotalMoney || 0).toFixed(2)}
+                </Text>
+              </div>
+            </div>
           </div>
           <div className='mb-3'>
             <Input

@@ -165,14 +165,15 @@ func SubscriptionEpayNotify(c *gin.Context) {
 }
 
 // SubscriptionEpayReturn handles browser return after payment.
-// It verifies the payload and completes the order, then redirects to console.
+// It verifies the payload and completes the order, then redirects to wallet.
 func SubscriptionEpayReturn(c *gin.Context) {
+	walletURL := system_setting.ServerAddress + "/wallet"
 	var params map[string]string
 
 	if c.Request.Method == "POST" {
 		// POST 请求：从 POST body 解析参数
 		if err := c.Request.ParseForm(); err != nil {
-			c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=fail")
+			c.Redirect(http.StatusFound, walletURL+"?pay=fail")
 			return
 		}
 		params = lo.Reduce(lo.Keys(c.Request.PostForm), func(r map[string]string, t string, i int) map[string]string {
@@ -188,29 +189,29 @@ func SubscriptionEpayReturn(c *gin.Context) {
 	}
 
 	if len(params) == 0 {
-		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=fail")
+		c.Redirect(http.StatusFound, walletURL+"?pay=fail")
 		return
 	}
 
 	client := GetEpayClient()
 	if client == nil {
-		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=fail")
+		c.Redirect(http.StatusFound, walletURL+"?pay=fail")
 		return
 	}
 	verifyInfo, err := client.Verify(params)
 	if err != nil || !verifyInfo.VerifyStatus {
-		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=fail")
+		c.Redirect(http.StatusFound, walletURL+"?pay=fail")
 		return
 	}
 	if verifyInfo.TradeStatus == epay.StatusTradeSuccess {
 		LockOrder(verifyInfo.ServiceTradeNo)
 		defer UnlockOrder(verifyInfo.ServiceTradeNo)
 		if err := model.CompleteSubscriptionOrder(verifyInfo.ServiceTradeNo, common.GetJsonString(verifyInfo)); err != nil {
-			c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=fail")
+			c.Redirect(http.StatusFound, walletURL+"?pay=fail")
 			return
 		}
-		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=success")
+		c.Redirect(http.StatusFound, walletURL+"?pay=success")
 		return
 	}
-	c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/subscription?pay=pending")
+	c.Redirect(http.StatusFound, walletURL+"?pay=pending")
 }

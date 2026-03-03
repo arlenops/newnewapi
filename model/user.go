@@ -326,19 +326,29 @@ func HardDeleteUserById(id int) error {
 }
 
 type InviteeEpayTopUpSummary struct {
-	InviteeId       int     `json:"invitee_id"`
-	Username        string  `json:"username"`
-	DisplayName     string  `json:"display_name"`
-	TotalTopUpMoney float64 `json:"total_topup_money"`
-	TopUpCount      int64   `json:"topup_count"`
+	InviteeId              int     `json:"invitee_id"`
+	Username               string  `json:"username"`
+	DisplayName            string  `json:"display_name"`
+	WalletTopUpMoney       float64 `json:"wallet_topup_money"`
+	WalletTopUpCount       int64   `json:"wallet_topup_count"`
+	SubscriptionTopUpMoney float64 `json:"subscription_topup_money"`
+	SubscriptionTopUpCount int64   `json:"subscription_topup_count"`
+	TotalTopUpMoney        float64 `json:"total_topup_money"`
+	TopUpCount             int64   `json:"topup_count"`
 }
 
-func GetInviteeEpayTopUpSummaries(inviterId int, keyword string, pageInfo *common.PageInfo) (items []InviteeEpayTopUpSummary, total int64, totalTopUpMoney float64, err error) {
+type InviteePaymentTotals struct {
+	WalletTopUpMoney       float64 `json:"wallet_topup_money"`
+	SubscriptionTopUpMoney float64 `json:"subscription_topup_money"`
+	TotalTopUpMoney        float64 `json:"total_topup_money"`
+}
+
+func GetInviteeEpayTopUpSummaries(inviterId int, keyword string, pageInfo *common.PageInfo) (items []InviteeEpayTopUpSummary, total int64, totals InviteePaymentTotals, err error) {
 	if inviterId <= 0 {
-		return nil, 0, 0, errors.New("inviter id 无效")
+		return nil, 0, totals, errors.New("inviter id 无效")
 	}
 	if pageInfo == nil {
-		return nil, 0, 0, errors.New("page info 为空")
+		return nil, 0, totals, errors.New("page info 为空")
 	}
 
 	baseQuery := DB.Model(&User{}).Where("inviter_id = ?", inviterId)
@@ -348,14 +358,20 @@ func GetInviteeEpayTopUpSummaries(inviterId int, keyword string, pageInfo *commo
 	}
 
 	if err = baseQuery.Session(&gorm.Session{}).Count(&total).Error; err != nil {
-		return nil, 0, 0, err
+		return nil, 0, totals, err
 	}
 
-	epayAggQuery := DB.Model(&TopUp{}).
-		Select("user_id, COALESCE(SUM(money), 0) AS total_topup_money, COUNT(1) AS topup_count").
+	walletAggQuery := DB.Model(&TopUp{}).
+		Select("user_id, COALESCE(SUM(money), 0) AS wallet_topup_money, COUNT(1) AS wallet_topup_count").
 		Where("status = ?", common.TopUpStatusSuccess).
 		Where("amount > ?", 0).
 		Where("trade_no LIKE ?", "USR%").
+		Group("user_id")
+
+	subscriptionAggQuery := DB.Model(&SubscriptionOrder{}).
+		Select("user_id, COALESCE(SUM(money), 0) AS subscription_topup_money, COUNT(1) AS subscription_topup_count").
+		Where("status = ?", common.TopUpStatusSuccess).
+		Where("money > ?", 0).
 		Group("user_id")
 
 	inviteeIdQuery := baseQuery.Session(&gorm.Session{}).Select("id")
@@ -365,26 +381,46 @@ func GetInviteeEpayTopUpSummaries(inviterId int, keyword string, pageInfo *commo
 		Where("amount > ?", 0).
 		Where("trade_no LIKE ?", "USR%").
 		Where("user_id IN (?)", inviteeIdQuery).
-		Scan(&totalTopUpMoney).Error; err != nil {
-		return nil, 0, 0, err
+		Scan(&totals.WalletTopUpMoney).Error; err != nil {
+		return nil, 0, totals, err
 	}
 
+	inviteeIdQuery = baseQuery.Session(&gorm.Session{}).Select("id")
+	if err = DB.Model(&SubscriptionOrder{}).
+		Select("COALESCE(SUM(money), 0)").
+		Where("status = ?", common.TopUpStatusSuccess).
+		Where("money > ?", 0).
+		Where("user_id IN (?)", inviteeIdQuery).
+		Scan(&totals.SubscriptionTopUpMoney).Error; err != nil {
+		return nil, 0, totals, err
+	}
+	totals.TotalTopUpMoney = totals.WalletTopUpMoney + totals.SubscriptionTopUpMoney
+
 	if total == 0 {
-		return []InviteeEpayTopUpSummary{}, 0, totalTopUpMoney, nil
+		return []InviteeEpayTopUpSummary{}, 0, totals, nil
 	}
 
 	items = make([]InviteeEpayTopUpSummary, 0, pageInfo.GetPageSize())
 	err = baseQuery.Session(&gorm.Session{}).
-		Select("id AS invitee_id, username, display_name, COALESCE(ep.total_topup_money, 0) AS total_topup_money, COALESCE(ep.topup_count, 0) AS topup_count").
-		Joins("LEFT JOIN (?) AS ep ON ep.user_id = id", epayAggQuery).
+		Select(
+			"id AS invitee_id, username, display_name, "+
+				"COALESCE(wt.wallet_topup_money, 0) AS wallet_topup_money, "+
+				"COALESCE(wt.wallet_topup_count, 0) AS wallet_topup_count, "+
+				"COALESCE(st.subscription_topup_money, 0) AS subscription_topup_money, "+
+				"COALESCE(st.subscription_topup_count, 0) AS subscription_topup_count, "+
+				"COALESCE(wt.wallet_topup_money, 0) + COALESCE(st.subscription_topup_money, 0) AS total_topup_money, "+
+				"COALESCE(wt.wallet_topup_count, 0) + COALESCE(st.subscription_topup_count, 0) AS topup_count",
+		).
+		Joins("LEFT JOIN (?) AS wt ON wt.user_id = id", walletAggQuery).
+		Joins("LEFT JOIN (?) AS st ON st.user_id = id", subscriptionAggQuery).
 		Order("id DESC").
 		Limit(pageInfo.GetPageSize()).
 		Offset(pageInfo.GetStartIdx()).
 		Scan(&items).Error
 	if err != nil {
-		return nil, 0, 0, err
+		return nil, 0, totals, err
 	}
-	return items, total, totalTopUpMoney, nil
+	return items, total, totals, nil
 }
 
 func inviteUser(inviterId int) (err error) {

@@ -384,7 +384,7 @@ func GetInviteeEpayTopUpSummary(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
 	keyword := strings.TrimSpace(c.Query("keyword"))
 
-	items, total, totalTopUpMoney, err := model.GetInviteeEpayTopUpSummaries(id, keyword, pageInfo)
+	items, total, totals, err := model.GetInviteeEpayTopUpSummaries(id, keyword, pageInfo)
 	if err != nil {
 		common.ApiError(c, err)
 		return
@@ -393,11 +393,13 @@ func GetInviteeEpayTopUpSummary(c *gin.Context) {
 	pageInfo.SetTotal(int(total))
 	pageInfo.SetItems(items)
 	common.ApiSuccess(c, gin.H{
-		"page":              pageInfo.Page,
-		"page_size":         pageInfo.PageSize,
-		"total":             pageInfo.Total,
-		"items":             pageInfo.Items,
-		"total_topup_money": totalTopUpMoney,
+		"page":                     pageInfo.Page,
+		"page_size":                pageInfo.PageSize,
+		"total":                    pageInfo.Total,
+		"items":                    pageInfo.Items,
+		"wallet_topup_money":       totals.WalletTopUpMoney,
+		"subscription_topup_money": totals.SubscriptionTopUpMoney,
+		"total_topup_money":        totals.TotalTopUpMoney,
 	})
 }
 

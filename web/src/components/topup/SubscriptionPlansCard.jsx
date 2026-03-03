@@ -209,8 +209,6 @@ const SubscriptionPlansCard = ({
     disableSubscriptionPreference && isSubscriptionPreference
       ? 'wallet_first'
       : billingPreference;
-  const subscriptionPreferenceLabel =
-    billingPreference === 'subscription_only' ? t('仅用订阅') : t('优先订阅');
 
   const planPurchaseCountMap = useMemo(() => {
     const map = new Map();
@@ -368,9 +366,9 @@ const SubscriptionPlansCard = ({
             </div>
             {disableSubscriptionPreference && isSubscriptionPreference && (
               <Text type='tertiary' size='small'>
-                {t('已保存偏好为')}
-                {subscriptionPreferenceLabel}
-                {t('，当前无生效订阅，将自动使用钱包')}
+                {t(
+                  '关于积分购买:套餐订阅为1元1积分(有效期一个月)，额度充值为2元1积分(永久有效)大额充值均有额外优惠，至高可享5折特惠!',
+                )}
               </Text>
             )}
 
@@ -471,7 +469,9 @@ const SubscriptionPlansCard = ({
               </>
             ) : (
               <div className='text-xs text-gray-500'>
-                {t('购买套餐后即可享受模型权益')}
+                {t(
+                  '关于积分购买:套餐订阅为1元1积分(有效期一个月)，额度充值为2元1积分(永久有效)大额充值均有额外优惠，至高可享5折特惠!',
+                )}
               </div>
             )}
           </Card>
