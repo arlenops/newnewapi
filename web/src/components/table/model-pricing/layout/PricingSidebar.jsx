@@ -304,7 +304,7 @@ const PricingSidebar = ({
 
         <div className='market-premium__filter-row'>
           <span className='market-premium__filter-row-label'>
-            {t('可用令牌分组')}
+            {t('可用分组')}
           </span>
           <div className='market-premium__filter-control'>
             <Select

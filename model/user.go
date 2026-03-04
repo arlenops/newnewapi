@@ -326,15 +326,15 @@ func HardDeleteUserById(id int) error {
 }
 
 type InviteeEpayTopUpSummary struct {
-	InviteeId              int     `json:"invitee_id"`
-	Username               string  `json:"username"`
-	DisplayName            string  `json:"display_name"`
-	WalletTopUpMoney       float64 `json:"wallet_topup_money"`
-	WalletTopUpCount       int64   `json:"wallet_topup_count"`
-	SubscriptionTopUpMoney float64 `json:"subscription_topup_money"`
-	SubscriptionTopUpCount int64   `json:"subscription_topup_count"`
-	TotalTopUpMoney        float64 `json:"total_topup_money"`
-	TopUpCount             int64   `json:"topup_count"`
+	InviteeId              int     `json:"invitee_id" gorm:"column:invitee_id"`
+	Username               string  `json:"username" gorm:"column:username"`
+	DisplayName            string  `json:"display_name" gorm:"column:display_name"`
+	WalletTopUpMoney       float64 `json:"wallet_topup_money" gorm:"column:wallet_topup_money"`
+	WalletTopUpCount       int64   `json:"wallet_topup_count" gorm:"column:wallet_topup_count"`
+	SubscriptionTopUpMoney float64 `json:"subscription_topup_money" gorm:"column:subscription_topup_money"`
+	SubscriptionTopUpCount int64   `json:"subscription_topup_count" gorm:"column:subscription_topup_count"`
+	TotalTopUpMoney        float64 `json:"total_topup_money" gorm:"column:total_topup_money"`
+	TopUpCount             int64   `json:"topup_count" gorm:"column:topup_count"`
 }
 
 type InviteePaymentTotals struct {

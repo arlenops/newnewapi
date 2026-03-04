@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useState, memo } from 'react';
 import PricingFilterModal from '../../modal/PricingFilterModal';
+import PricingSidebar from '../PricingSidebar';
 import PricingVendorIntroWithSkeleton from './PricingVendorIntroWithSkeleton';
 import SearchActions from './SearchActions';
 
@@ -65,21 +66,26 @@ const PricingTopSection = memo(
             />
           </>
         ) : (
-          <PricingVendorIntroWithSkeleton
-            loading={loading}
-            filterVendor={filterVendor}
-            models={filteredModels}
-            allModels={models}
-            t={t}
-            selectedRowKeys={selectedRowKeys}
-            copyText={copyText}
-            handleChange={handleChange}
-            handleCompositionStart={handleCompositionStart}
-            handleCompositionEnd={handleCompositionEnd}
-            isMobile={isMobile}
-            searchValue={searchValue}
-            setShowFilterModal={setShowFilterModal}
-          />
+          <>
+            <PricingVendorIntroWithSkeleton
+              loading={loading}
+              filterVendor={filterVendor}
+              models={filteredModels}
+              allModels={models}
+              t={t}
+              selectedRowKeys={selectedRowKeys}
+              copyText={copyText}
+              handleChange={handleChange}
+              handleCompositionStart={handleCompositionStart}
+              handleCompositionEnd={handleCompositionEnd}
+              isMobile={isMobile}
+              searchValue={searchValue}
+              setShowFilterModal={setShowFilterModal}
+            />
+            <div className='mt-3'>
+              <PricingSidebar {...sidebarProps} />
+            </div>
+          </>
         )}
       </>
     );

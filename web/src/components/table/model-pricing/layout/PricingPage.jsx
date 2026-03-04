@@ -19,7 +19,6 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { Layout, ImagePreview } from '@douyinfe/semi-ui';
-import PricingSidebar from './PricingSidebar';
 import PricingContent from './content/PricingContent';
 import ModelDetailSideSheet from '../modal/ModelDetailSideSheet';
 import { useModelPricingData } from '../../../../hooks/model-pricing/useModelPricingData';
@@ -43,14 +42,6 @@ const PricingPage = () => {
   return (
     <div className='market-premium w-full max-w-[1600px] mx-auto px-3 md:px-5 xl:px-8'>
       <Layout className='pricing-layout pricing-layout--stacked market-premium__layout'>
-        {!isMobile && (
-          <div className='pricing-scroll-hide pricing-sidebar market-premium__sidebar-shell market-premium__sidebar-shell--top'>
-            <div className='market-premium__sidebar-inner pricing-scroll-hide'>
-              <PricingSidebar {...allProps} />
-            </div>
-          </div>
-        )}
-
         <Content className='pricing-scroll-hide pricing-content market-premium__content-shell'>
           <PricingContent
             {...allProps}
