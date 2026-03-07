@@ -38,6 +38,7 @@ export const useApiRequest = (
   setActiveDebugTab,
   sseSourceRef,
   saveMessages,
+  requestHeaders = {},
 ) => {
   const { t } = useTranslation();
 
@@ -190,6 +191,7 @@ export const useApiRequest = (
           headers: {
             'Content-Type': 'application/json',
             'New-Api-User': getUserIdFromLocalStorage(),
+            ...requestHeaders,
           },
           body: JSON.stringify(payload),
         });
@@ -285,7 +287,14 @@ export const useApiRequest = (
         });
       }
     },
-    [setDebugData, setActiveDebugTab, setMessage, t, applyAutoCollapseLogic],
+    [
+      setDebugData,
+      setActiveDebugTab,
+      setMessage,
+      t,
+      applyAutoCollapseLogic,
+      requestHeaders,
+    ],
   );
 
   // SSE请求
@@ -305,6 +314,7 @@ export const useApiRequest = (
         headers: {
           'Content-Type': 'application/json',
           'New-Api-User': getUserIdFromLocalStorage(),
+          ...requestHeaders,
         },
         method: 'POST',
         payload: JSON.stringify(payload),
@@ -450,6 +460,7 @@ export const useApiRequest = (
       completeMessage,
       t,
       applyAutoCollapseLogic,
+      requestHeaders,
     ],
   );
 

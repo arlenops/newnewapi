@@ -30,7 +30,9 @@ import {
   Typography,
   Input,
   Modal,
+  Dropdown,
 } from '@douyinfe/semi-ui';
+
 import {
   timestamp2string,
   renderGroup,
@@ -41,6 +43,7 @@ import {
   IconCopy,
   IconEyeOpened,
   IconEyeClosed,
+  IconChevronDown,
 } from '@douyinfe/semi-icons';
 
 // progress color helper
@@ -302,6 +305,30 @@ const renderQuotaUsage = (text, record, t) => {
   );
 };
 
+const buildOnlineUseSettings = (apiKey) => ({
+  keyVaults: {
+    common: {
+      apiKey,
+    },
+  },
+});
+
+const buildCanvasUrl = (apiKey) => {
+  const url = new URL('https://open.oioiart.com/canvas');
+  url.searchParams.set(
+    'settings',
+    JSON.stringify(buildOnlineUseSettings(apiKey)),
+  );
+  return url.toString();
+};
+
+const buildPlaygroundUrl = (apiKey) => {
+  const url = new URL(`${window.location.origin}/playground`);
+  url.searchParams.set('scene', 'online-chat');
+  url.searchParams.set('token', apiKey);
+  return url.toString();
+};
+
 // Render operations column
 const renderOperations = (
   text,
@@ -315,31 +342,41 @@ const renderOperations = (
   const apiKey = record.key.startsWith('sk-')
     ? record.key
     : `sk-${record.key}`;
-  const onlineUseUrl = (() => {
-    const settings = {
-      keyVaults: {
-        common: {
-          apiKey,
-        },
+  const onlineUseOptions = [
+    {
+      node: 'item',
+      name: t('无限画布'),
+      onClick: () => {
+        window.open(buildCanvasUrl(apiKey), '_blank');
       },
-    };
-    const url = new URL('https://open.oioiart.com/painting');
-    url.searchParams.set('settings', JSON.stringify(settings));
-    return url.toString();
-  })();
+    },
+    {
+      node: 'item',
+      name: t('在线对话'),
+      onClick: () => {
+        window.open(buildPlaygroundUrl(apiKey), '_blank');
+      },
+    },
+  ];
 
   return (
     <Space wrap>
-      <Button
-        size='small'
-        type='tertiary'
-        className='token-premium-online-btn'
-        onClick={() => {
-          window.open(onlineUseUrl, '_blank');
-        }}
+      <Dropdown
+        trigger='click'
+        position='bottomLeft'
+        menu={onlineUseOptions}
       >
-        {t('在线使用')}
-      </Button>
+        <Button
+          size='small'
+          type='primary'
+          theme='light'
+          iconPosition='right'
+          icon={<IconChevronDown size='small' />}
+          className='token-premium-online-btn'
+        >
+          {t('在线使用')}
+        </Button>
+      </Dropdown>
 
       {record.status === 1 ? (
         <Button

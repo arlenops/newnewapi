@@ -364,11 +364,22 @@ const SubscriptionPlansCard = ({
                 />
               </div>
             </div>
-            <Text type='tertiary' size='small'>
-              {t(
-                '关于模型调用：订阅套餐与额度充值后均可调用本站所有模型，包括不限GPT/Claude/Gemini/Grok/Midjourney/Qwen/Jimeng/Deepseek/Glm/llama等国内外全球Ai大模型',
-              )}
-            </Text>
+            <div>
+              <Text type='tertiary' size='small' style={{ display: 'block' }}>
+                {t(
+                  '关于积分购买：套餐订阅为1元1积分（有效期一个月），额度充值为2元1积分（永久有效），大额充值均有额外优惠，最高可享5折特惠！',
+                )}
+              </Text>
+              <Text
+                type='tertiary'
+                size='small'
+                style={{ display: 'block', marginTop: 4 }}
+              >
+                {t(
+                  '关于模型调用：订阅套餐与额度充值后均可调用本站所有模型，包括不限GPT/Claude/Gemini/Grok/Midjourney/Qwen/Jimeng/Deepseek/Glm/llama等国内外全球Ai大模型',
+                )}
+              </Text>
+            </div>
 
             {hasAnySubscription ? (
               <>

@@ -83,6 +83,15 @@ const Playground = () => {
   const isMobile = useIsMobile();
   const styleState = { isMobile };
   const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get('token');
+  const requestHeaders = React.useMemo(() => {
+    if (!tokenFromUrl) {
+      return {};
+    }
+    return {
+      Authorization: `Bearer ${tokenFromUrl}`,
+    };
+  }, [tokenFromUrl]);
 
   const state = usePlaygroundState();
   const {
@@ -127,6 +136,7 @@ const Playground = () => {
     setActiveDebugTab,
     sseSourceRef,
     saveMessagesImmediately,
+    requestHeaders,
   );
 
   // 数据加载
