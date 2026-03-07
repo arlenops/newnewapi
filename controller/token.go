@@ -180,6 +180,11 @@ func AddToken(c *gin.Context) {
 		common.SysLog("failed to generate token key: " + err.Error())
 		return
 	}
+	crossGroupRetry := token.CrossGroupRetry
+	if token.Group == "auto" {
+		crossGroupRetry = true
+	}
+
 	cleanToken := model.Token{
 		UserId:             c.GetInt("id"),
 		Name:               token.Name,
@@ -193,7 +198,7 @@ func AddToken(c *gin.Context) {
 		ModelLimits:        token.ModelLimits,
 		AllowIps:           token.AllowIps,
 		Group:              token.Group,
-		CrossGroupRetry:    token.CrossGroupRetry,
+		CrossGroupRetry:    crossGroupRetry,
 	}
 	err = cleanToken.Insert()
 	if err != nil {
