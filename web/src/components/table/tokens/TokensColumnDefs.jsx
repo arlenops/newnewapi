@@ -322,6 +322,15 @@ const buildCanvasUrl = (apiKey) => {
   return url.toString();
 };
 
+const buildArtUrl = (apiKey) => {
+  const url = new URL('https://art.502api.com/');
+  url.searchParams.set(
+    'settings',
+    JSON.stringify(buildOnlineUseSettings(apiKey)),
+  );
+  return url.toString();
+};
+
 const buildPlaygroundUrl = (apiKey) => {
   const url = new URL(`${window.location.origin}/playground`);
   url.searchParams.set('scene', 'online-chat');
@@ -345,14 +354,21 @@ const renderOperations = (
   const onlineUseOptions = [
     {
       node: 'item',
-      name: t('无限画布'),
+      name: t('无限画布/beta'),
       onClick: () => {
         window.open(buildCanvasUrl(apiKey), '_blank');
       },
     },
     {
       node: 'item',
-      name: t('在线对话'),
+      name: t('在线绘画/视频'),
+      onClick: () => {
+        window.open(buildArtUrl(apiKey), '_blank');
+      },
+    },
+    {
+      node: 'item',
+      name: t('在线对话/测试'),
       onClick: () => {
         window.open(buildPlaygroundUrl(apiKey), '_blank');
       },
