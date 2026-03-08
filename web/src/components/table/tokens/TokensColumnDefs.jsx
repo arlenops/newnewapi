@@ -323,7 +323,7 @@ const buildCanvasUrl = (apiKey) => {
 };
 
 const buildArtUrl = (apiKey) => {
-  const url = new URL('https://art.502api.com/');
+  const url = new URL('https://image.oioiart.com/');
   url.searchParams.set(
     'settings',
     JSON.stringify(buildOnlineUseSettings(apiKey)),
