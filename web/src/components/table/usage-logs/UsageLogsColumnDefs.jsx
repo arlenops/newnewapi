@@ -223,6 +223,23 @@ function renderBillingTag(record, t) {
   return null;
 }
 
+function renderSubscriptionCost(quotaText, record, t) {
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 4,
+        lineHeight: 1.2,
+      }}
+    >
+      {renderBillingTag(record, t)}
+      <span>{quotaText}</span>
+    </div>
+  );
+}
+
 function renderModelName(record, copyText, t) {
   let other = getLogOther(record.other);
   let modelMapped =
@@ -641,12 +658,7 @@ export const getLogsColumns = ({
         const other = getLogOther(record.other);
         const isSubscription = other?.billing_source === 'subscription';
         if (isSubscription) {
-          // Subscription billed: show only tag (no $0), but keep tooltip for equivalent cost.
-          return (
-            <Tooltip content={`${t('由订阅抵扣')}：${renderQuota(text, 6)}`}>
-              <span>{renderBillingTag(record, t)}</span>
-            </Tooltip>
-          );
+          return renderSubscriptionCost(renderQuota(text, 6), record, t);
         }
         return <>{renderQuota(text, 6)}</>;
       },

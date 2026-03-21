@@ -37,6 +37,7 @@ const PricingTopSection = memo(
     filteredModels,
     loading,
     searchValue,
+    showDesktopSidebar = true,
     t,
   }) => {
     const [showFilterModal, setShowFilterModal] = useState(false);
@@ -82,9 +83,11 @@ const PricingTopSection = memo(
               searchValue={searchValue}
               setShowFilterModal={setShowFilterModal}
             />
-            <div className='mt-3'>
-              <PricingSidebar {...sidebarProps} />
-            </div>
+            {showDesktopSidebar && (
+              <div className='mt-3'>
+                <PricingSidebar {...sidebarProps} />
+              </div>
+            )}
           </>
         )}
       </>

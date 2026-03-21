@@ -20,6 +20,7 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 import { Layout, ImagePreview } from '@douyinfe/semi-ui';
 import PricingContent from './content/PricingContent';
+import PricingSidebar from './PricingSidebar';
 import ModelDetailSideSheet from '../modal/ModelDetailSideSheet';
 import { useModelPricingData } from '../../../../hooks/model-pricing/useModelPricingData';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
@@ -27,7 +28,7 @@ import './market.css';
 
 const PricingPage = () => {
   const pricingData = useModelPricingData();
-  const { Content } = Layout;
+  const { Content, Sider } = Layout;
   const isMobile = useIsMobile();
   const [showRatio, setShowRatio] = React.useState(false);
   const [viewMode, setViewMode] = React.useState('card');
@@ -41,12 +42,24 @@ const PricingPage = () => {
 
   return (
     <div className='market-premium w-full max-w-[1600px] mx-auto px-3 md:px-5 xl:px-8'>
-      <Layout className='pricing-layout pricing-layout--stacked market-premium__layout'>
+      <Layout
+        className={`pricing-layout market-premium__layout ${
+          isMobile ? 'pricing-layout--stacked' : 'pricing-layout--sidebar'
+        }`}
+      >
+        {!isMobile && (
+          <Sider className='pricing-sidebar market-premium__sidebar-shell pricing-scroll-hide'>
+            <div className='market-premium__sidebar-inner'>
+              <PricingSidebar {...allProps} />
+            </div>
+          </Sider>
+        )}
         <Content className='pricing-scroll-hide pricing-content market-premium__content-shell'>
           <PricingContent
             {...allProps}
             isMobile={isMobile}
             sidebarProps={allProps}
+            showDesktopSidebar={false}
           />
         </Content>
       </Layout>

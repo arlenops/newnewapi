@@ -43,6 +43,7 @@ const LogsTable = (logsData) => {
     openChannelAffinityUsageCacheModal,
     hasExpandableRows,
     isAdminUser,
+    canViewUsageDetails,
     t,
     COLUMN_KEYS,
   } = logsData;
@@ -68,7 +69,12 @@ const LogsTable = (logsData) => {
 
   // Filter columns based on visibility settings
   const getVisibleColumns = () => {
-    return allColumns.filter((column) => visibleColumns[column.key]);
+    return allColumns.filter((column) => {
+      if (!canViewUsageDetails && column.key === COLUMN_KEYS.DETAILS) {
+        return false;
+      }
+      return visibleColumns[column.key];
+    });
   };
 
   const visibleColumnsList = useMemo(() => {
@@ -85,20 +91,32 @@ const LogsTable = (logsData) => {
     return <Descriptions data={expandData[record.key]} />;
   };
 
+  const expandableProps =
+    canViewUsageDetails && hasExpandableRows()
+      ? {
+          expandedRowRender: expandRowRender,
+          expandRowByClick: true,
+          rowExpandable: (record) =>
+            expandData[record.key] && expandData[record.key].length > 0,
+        }
+      : {};
+
+  const tableScroll = compactMode
+    ? undefined
+    : canViewUsageDetails
+      ? { x: 'max-content' }
+      : undefined;
+
   return (
     <CardTable
       columns={tableColumns}
-      {...(hasExpandableRows() && {
-        expandedRowRender: expandRowRender,
-        expandRowByClick: true,
-        rowExpandable: (record) =>
-          expandData[record.key] && expandData[record.key].length > 0,
-      })}
+      {...expandableProps}
       dataSource={logs}
       rowKey='key'
       loading={loading}
-      scroll={compactMode ? undefined : { x: 'max-content' }}
-      className='rounded-xl overflow-hidden'
+      scroll={tableScroll}
+      className='rounded-xl overflow-hidden w-full'
+      style={{ width: '100%' }}
       size='middle'
       empty={
         <Empty

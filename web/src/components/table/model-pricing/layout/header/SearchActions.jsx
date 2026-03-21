@@ -31,6 +31,8 @@ const SearchActions = memo(
     isMobile = false,
     searchValue = '',
     setShowFilterModal,
+    showCopyButton = true,
+    trailingContent = null,
     t,
   }) => {
     const handleCopyClick = useCallback(() => {
@@ -45,7 +47,7 @@ const SearchActions = memo(
 
     return (
       <div className='market-premium__search-actions flex items-center gap-2 w-full'>
-        <div className='flex-1'>
+        <div className='market-premium__search-input-wrap flex-1'>
           <Input
             className='market-premium__search-input'
             prefix={<IconSearch />}
@@ -58,16 +60,22 @@ const SearchActions = memo(
           />
         </div>
 
-        <Button
-          theme='outline'
-          type='primary'
-          icon={<IconCopy />}
-          onClick={handleCopyClick}
-          disabled={selectedRowKeys.length === 0}
-          className='market-premium__copy-btn disabled:!bg-gray-300 disabled:!text-gray-500'
-        >
-          {t('复制')}
-        </Button>
+        {showCopyButton && (
+          <Button
+            theme='outline'
+            type='primary'
+            icon={<IconCopy />}
+            onClick={handleCopyClick}
+            disabled={selectedRowKeys.length === 0}
+            className='market-premium__copy-btn disabled:!bg-gray-300 disabled:!text-gray-500'
+          >
+            {t('复制')}
+          </Button>
+        )}
+
+        {trailingContent ? (
+          <div className='market-premium__search-extra'>{trailingContent}</div>
+        ) : null}
 
         {isMobile && (
           <Button

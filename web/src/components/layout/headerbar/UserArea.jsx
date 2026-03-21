@@ -143,6 +143,11 @@ const UserArea = ({
     );
   } else {
     const showRegisterButton = !isSelfUseMode;
+    const registerButtonStyle = {
+      backgroundColor: '#111111',
+      borderColor: '#111111',
+      color: '#ffffff',
+    };
 
     const commonSizingAndLayoutClass =
       'flex items-center justify-center !py-[10px] !px-1.5';
@@ -151,7 +156,7 @@ const UserArea = ({
       '!bg-semi-color-fill-0 dark:!bg-semi-color-fill-1 hover:!bg-semi-color-fill-1 dark:hover:!bg-gray-700 transition-colors';
     let loginButtonClasses = `${commonSizingAndLayoutClass} ${loginButtonSpecificStyling}`;
 
-    let registerButtonClasses = `${commonSizingAndLayoutClass} !bg-black hover:!bg-gray-800 transition-colors`;
+    let registerButtonClasses = `${commonSizingAndLayoutClass} !bg-black !border-black !text-white dark:!bg-black hover:!bg-zinc-800 dark:hover:!bg-zinc-800 transition-colors`;
 
     const loginButtonTextSpanClass =
       '!text-xs !text-semi-color-text-1 dark:!text-gray-300 !p-1.5';
@@ -186,6 +191,7 @@ const UserArea = ({
                 theme='solid'
                 type='primary'
                 className={registerButtonClasses}
+                style={registerButtonStyle}
               >
                 <span className={registerButtonTextSpanClass}>{t('注册')}</span>
               </Button>

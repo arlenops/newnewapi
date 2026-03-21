@@ -74,6 +74,7 @@ export const useLogsData = () => {
 
   // User and admin
   const isAdminUser = isAdmin();
+  const canViewUsageDetails = isAdminUser;
   // Role-specific storage key to prevent different roles from overwriting each other
   const STORAGE_KEY = isAdminUser
     ? 'logs-table-columns-admin'
@@ -135,6 +136,7 @@ export const useLogsData = () => {
           merged[COLUMN_KEYS.CHANNEL] = false;
           merged[COLUMN_KEYS.USERNAME] = false;
           merged[COLUMN_KEYS.RETRY] = false;
+          merged[COLUMN_KEYS.DETAILS] = false;
         }
         setVisibleColumns(merged);
       } catch (e) {
@@ -162,7 +164,7 @@ export const useLogsData = () => {
       [COLUMN_KEYS.COST]: true,
       [COLUMN_KEYS.RETRY]: isAdminUser,
       [COLUMN_KEYS.IP]: true,
-      [COLUMN_KEYS.DETAILS]: true,
+      [COLUMN_KEYS.DETAILS]: canViewUsageDetails,
     };
   };
 
@@ -188,7 +190,8 @@ export const useLogsData = () => {
       if (
         (key === COLUMN_KEYS.CHANNEL ||
           key === COLUMN_KEYS.USERNAME ||
-          key === COLUMN_KEYS.RETRY) &&
+          key === COLUMN_KEYS.RETRY ||
+          key === COLUMN_KEYS.DETAILS) &&
         !isAdminUser
       ) {
         updatedColumns[key] = false;
@@ -717,6 +720,9 @@ export const useLogsData = () => {
 
   // Check if any record has expandable content
   const hasExpandableRows = () => {
+    if (!canViewUsageDetails) {
+      return false;
+    }
     return logs.some(
       (log) => expandData[log.key] && expandData[log.key].length > 0,
     );
@@ -735,6 +741,7 @@ export const useLogsData = () => {
     logType,
     stat,
     isAdminUser,
+    canViewUsageDetails,
 
     // Form state
     formApi,

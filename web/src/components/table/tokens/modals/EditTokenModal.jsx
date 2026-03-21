@@ -514,7 +514,7 @@ const EditTokenModal = (props) => {
                   <Col span={24}>
                     <Form.Switch
                       field='unlimited_quota'
-                      label={t('无限额度')}
+                      label={t('根据钱包额度')}
                       size='default'
                       extraText={t(
                         '令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制',

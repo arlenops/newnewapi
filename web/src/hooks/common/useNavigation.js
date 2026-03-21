@@ -88,27 +88,8 @@ export const useNavigation = (t, docsLink, headerNavModules, userState) => {
       {
         text: t('日志'),
         itemKey: 'logs',
+        to: '/log',
         requiresAuth: true,
-        children: [
-          {
-            text: t('使用日志'),
-            itemKey: 'usage-log',
-            to: '/log',
-            requiresAuth: true,
-          },
-          {
-            text: t('绘图日志'),
-            itemKey: 'drawing-log',
-            to: '/midjourney',
-            requiresAuth: true,
-          },
-          {
-            text: t('任务日志'),
-            itemKey: 'task-log',
-            to: '/task',
-            requiresAuth: true,
-          },
-        ],
       },
       {
         text: t('模型'),

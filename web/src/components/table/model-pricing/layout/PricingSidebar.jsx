@@ -18,8 +18,9 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Button, Select } from '@douyinfe/semi-ui';
+import { Button } from '@douyinfe/semi-ui';
 
+import { getLobeHubIcon } from '../../../../helpers';
 import { resetPricingFilters } from '../../../../helpers/utils';
 import { usePricingFilterCounts } from '../../../../hooks/model-pricing/usePricingFilterCounts';
 
@@ -87,43 +88,66 @@ const PricingSidebar = ({
 
   const allModels = categoryProps.models || [];
 
-  const vendorOptions = React.useMemo(() => {
-    const vendors = new Set();
+  const vendorCards = React.useMemo(() => {
+    const vendors = new Map();
     let hasUnknownVendor = false;
+
     allModels.forEach((model) => {
-      if (model.vendor_name) vendors.add(model.vendor_name);
-      else hasUnknownVendor = true;
+      if (model.vendor_name) {
+        const existing = vendors.get(model.vendor_name);
+        if (existing) {
+          if (!existing.icon && model.vendor_icon) {
+            existing.icon = model.vendor_icon;
+          }
+        } else {
+          vendors.set(model.vendor_name, {
+            value: model.vendor_name,
+            label: model.vendor_name,
+            icon: model.vendor_icon || '',
+          });
+        }
+      } else {
+        hasUnknownVendor = true;
+      }
     });
 
-    const sortedVendors = Array.from(vendors).sort((a, b) =>
-      a.localeCompare(b),
+    const sortedVendors = Array.from(vendors.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
     );
-    const options = [
+
+    const items = [
       {
-        label: `${t('全部供应商')} (${vendorModels.length})`,
         value: 'all',
+        label: t('全部供应商'),
+        icon: '',
+        count: vendorModels.length,
+        disabled: vendorModels.length === 0,
       },
       ...sortedVendors.map((vendor) => {
         const count = vendorModels.filter(
-          (m) => m.vendor_name === vendor,
+          (model) => model.vendor_name === vendor.value,
         ).length;
         return {
-          label: `${vendor} (${count})`,
-          value: vendor,
+          ...vendor,
+          count,
           disabled: count === 0,
         };
       }),
     ];
 
     if (hasUnknownVendor) {
-      const unknownCount = vendorModels.filter((m) => !m.vendor_name).length;
-      options.push({
-        label: `${t('未知供应商')} (${unknownCount})`,
+      const unknownCount = vendorModels.filter((model) => !model.vendor_name)
+        .length;
+      items.push({
         value: 'unknown',
+        label: t('未知供应商'),
+        icon: '',
+        count: unknownCount,
         disabled: unknownCount === 0,
       });
     }
-    return options;
+
+    return items;
   }, [allModels, vendorModels, t]);
 
   const tagOptions = React.useMemo(() => {
@@ -253,8 +277,22 @@ const PricingSidebar = ({
     ];
   }, [allModels, endpointTypeModels, t]);
 
+  const renderNativeOptions = React.useCallback(
+    (options) =>
+      options.map((option) => (
+        <option
+          key={String(option.value)}
+          value={String(option.value)}
+          disabled={option.disabled}
+        >
+          {option.label}
+        </option>
+      )),
+    [],
+  );
+
   return (
-    <div className='market-premium__filter-panel p-2'>
+    <div className='market-premium__filter-panel'>
       <div className='market-premium__filter-head flex items-center justify-between mb-6'>
         <div className='market-premium__filter-title text-lg font-semibold text-gray-800'>
           {t('筛选')}
@@ -270,35 +308,73 @@ const PricingSidebar = ({
       </div>
 
       <div className='market-premium__filter-rows'>
-        <div className='market-premium__filter-row'>
-          <span className='market-premium__filter-row-label'>
-            {t('供应商')}
-          </span>
-          <div className='market-premium__filter-control'>
-            <Select
-              className='market-premium__filter-select'
-              value={filterVendor}
-              optionList={vendorOptions}
-              onChange={(value) => setFilterVendor(value ?? 'all')}
-              disabled={loading}
-              showArrow={false}
-              size='small'
-            />
+        <div className='market-premium__vendor-section'>
+          <div className='market-premium__vendor-section-head'>
+            <span className='market-premium__filter-row-label'>
+              {t('供应商')}
+            </span>
+          </div>
+          <div className='market-premium__vendor-list'>
+            {vendorCards.map((vendor) => {
+              const isActive = (filterVendor ?? 'all') === vendor.value;
+              const hasIcon = Boolean(vendor.icon);
+
+              return (
+                <button
+                  key={vendor.value}
+                  type='button'
+                  className={`market-premium__vendor-item ${
+                    isActive ? 'market-premium__vendor-item--active' : ''
+                  }`}
+                  onClick={() => setFilterVendor(vendor.value)}
+                  disabled={loading || vendor.disabled}
+                  aria-pressed={isActive}
+                >
+                  <span className='market-premium__vendor-main'>
+                    <span
+                      className={`market-premium__vendor-icon ${
+                        hasIcon ? 'market-premium__vendor-icon--logo' : ''
+                      }`}
+                    >
+                      {hasIcon ? (
+                        getLobeHubIcon(vendor.icon, 18)
+                      ) : (
+                        <span className='market-premium__vendor-fallback'>
+                          {vendor.value === 'all'
+                            ? 'A'
+                            : vendor.value === 'unknown'
+                              ? '?'
+                              : vendor.label.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                    <span className='market-premium__vendor-meta'>
+                      <span className='market-premium__vendor-name'>
+                        {vendor.label}
+                      </span>
+                    </span>
+                  </span>
+                  <span className='market-premium__vendor-count'>
+                    {vendor.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className='market-premium__filter-row'>
           <span className='market-premium__filter-row-label'>{t('标签')}</span>
           <div className='market-premium__filter-control'>
-            <Select
-              className='market-premium__filter-select'
-              value={filterTag}
-              optionList={tagOptions}
-              onChange={(value) => setFilterTag(value ?? 'all')}
+            <select
+              className='market-premium__filter-native-select'
+              value={String(filterTag ?? 'all')}
+              onChange={(event) => setFilterTag(event.target.value || 'all')}
               disabled={loading}
-              showArrow={false}
-              size='small'
-            />
+              aria-label={t('标签')}
+            >
+              {renderNativeOptions(tagOptions)}
+            </select>
           </div>
         </div>
 
@@ -307,15 +383,15 @@ const PricingSidebar = ({
             {t('可用分组')}
           </span>
           <div className='market-premium__filter-control'>
-            <Select
-              className='market-premium__filter-select'
-              value={filterGroup}
-              optionList={groupOptions}
-              onChange={(value) => handleGroupClick(value ?? 'all')}
+            <select
+              className='market-premium__filter-native-select'
+              value={String(filterGroup ?? 'all')}
+              onChange={(event) => handleGroupClick(event.target.value || 'all')}
               disabled={loading}
-              showArrow={false}
-              size='small'
-            />
+              aria-label={t('可用分组')}
+            >
+              {renderNativeOptions(groupOptions)}
+            </select>
           </div>
         </div>
 
@@ -324,15 +400,19 @@ const PricingSidebar = ({
             {t('计费类型')}
           </span>
           <div className='market-premium__filter-control'>
-            <Select
-              className='market-premium__filter-select'
-              value={filterQuotaType}
-              optionList={quotaTypeOptions}
-              onChange={(value) => setFilterQuotaType(value ?? 'all')}
+            <select
+              className='market-premium__filter-native-select'
+              value={String(filterQuotaType ?? 'all')}
+              onChange={(event) =>
+                setFilterQuotaType(
+                  event.target.value === 'all' ? 'all' : Number(event.target.value),
+                )
+              }
               disabled={loading}
-              showArrow={false}
-              size='small'
-            />
+              aria-label={t('计费类型')}
+            >
+              {renderNativeOptions(quotaTypeOptions)}
+            </select>
           </div>
         </div>
 
@@ -341,15 +421,17 @@ const PricingSidebar = ({
             {t('端点类型')}
           </span>
           <div className='market-premium__filter-control'>
-            <Select
-              className='market-premium__filter-select'
-              value={filterEndpointType}
-              optionList={endpointTypeOptions}
-              onChange={(value) => setFilterEndpointType(value ?? 'all')}
+            <select
+              className='market-premium__filter-native-select'
+              value={String(filterEndpointType ?? 'all')}
+              onChange={(event) =>
+                setFilterEndpointType(event.target.value || 'all')
+              }
               disabled={loading}
-              showArrow={false}
-              size='small'
-            />
+              aria-label={t('端点类型')}
+            >
+              {renderNativeOptions(endpointTypeOptions)}
+            </select>
           </div>
         </div>
       </div>

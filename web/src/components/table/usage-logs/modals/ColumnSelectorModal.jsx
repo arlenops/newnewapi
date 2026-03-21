@@ -30,6 +30,7 @@ const ColumnSelectorModal = ({
   initDefaultColumns,
   COLUMN_KEYS,
   isAdminUser,
+  canViewUsageDetails,
   copyText,
   showUserInfoFunc,
   t,
@@ -84,6 +85,10 @@ const ColumnSelectorModal = ({
               column.key === COLUMN_KEYS.USERNAME ||
               column.key === COLUMN_KEYS.RETRY)
           ) {
+            return null;
+          }
+
+          if (!canViewUsageDetails && column.key === COLUMN_KEYS.DETAILS) {
             return null;
           }
 

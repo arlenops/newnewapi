@@ -21,7 +21,12 @@ import React from 'react';
 import PricingTopSection from '../header/PricingTopSection';
 import PricingView from './PricingView';
 
-const PricingContent = ({ isMobile, sidebarProps, ...props }) => {
+const PricingContent = ({
+  isMobile,
+  sidebarProps,
+  showDesktopSidebar = true,
+  ...props
+}) => {
   return (
     <div
       className={
@@ -36,6 +41,7 @@ const PricingContent = ({ isMobile, sidebarProps, ...props }) => {
           {...props}
           isMobile={isMobile}
           sidebarProps={sidebarProps}
+          showDesktopSidebar={showDesktopSidebar}
         />
       </div>
 

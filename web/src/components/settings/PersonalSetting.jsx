@@ -78,7 +78,7 @@ const PersonalSetting = () => {
   const [passkeySupported, setPasskeySupported] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
     warningType: 'email',
-    warningThreshold: 100000,
+    warningThreshold: 1000000,
     webhookUrl: '',
     webhookSecret: '',
     notificationEmail: '',
@@ -149,7 +149,7 @@ const PersonalSetting = () => {
       const settings = JSON.parse(userState.user.setting);
       setNotificationSettings({
         warningType: settings.notify_type || 'email',
-        warningThreshold: settings.quota_warning_threshold || 500000,
+        warningThreshold: settings.quota_warning_threshold || 1000000,
         webhookUrl: settings.webhook_url || '',
         webhookSecret: settings.webhook_secret || '',
         notificationEmail: settings.notification_email || '',

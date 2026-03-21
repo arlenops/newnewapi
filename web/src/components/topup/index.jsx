@@ -39,6 +39,7 @@ import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
 import PaymentConfirmModal from './modals/PaymentConfirmModal';
 import TopupHistoryModal from './modals/TopupHistoryModal';
+import EmailBindModal from '../settings/personal/modals/EmailBindModal';
 import './topup.css';
 
 const TopUp = () => {
@@ -105,6 +106,17 @@ const TopUp = () => {
 
   // 账单Modal状态
   const [openHistory, setOpenHistory] = useState(false);
+  const [showEmailBindModal, setShowEmailBindModal] = useState(false);
+  const [inputs, setInputs] = useState({
+    email_verification_code: '',
+    email: '',
+  });
+  const [turnstileEnabled, setTurnstileEnabled] = useState(false);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [emailBindLoading, setEmailBindLoading] = useState(false);
+  const [disableEmailButton, setDisableEmailButton] = useState(false);
+  const [emailCountdown, setEmailCountdown] = useState(30);
 
   // 订阅相关
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
@@ -157,6 +169,67 @@ const TopUp = () => {
       showError(t('请求失败'));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEmailInputChange = (name, value) => {
+    setInputs((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const sendVerificationCode = async () => {
+    if (inputs.email === '') {
+      showError(t('请输入邮箱！'));
+      return;
+    }
+    if (turnstileEnabled && turnstileToken === '') {
+      showInfo(t('请稍后几秒重试，Turnstile 正在检查用户环境！'));
+      return;
+    }
+    setDisableEmailButton(true);
+    setEmailBindLoading(true);
+    try {
+      const res = await API.get(
+        `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`,
+      );
+      const { success, message } = res.data;
+      if (success) {
+        showSuccess(t('验证码发送成功，请检查邮箱！'));
+      } else {
+        showError(message);
+        setDisableEmailButton(false);
+        setEmailCountdown(30);
+      }
+    } catch (error) {
+      showError(t('请求失败'));
+      setDisableEmailButton(false);
+      setEmailCountdown(30);
+    } finally {
+      setEmailBindLoading(false);
+    }
+  };
+
+  const bindEmail = async () => {
+    if (inputs.email_verification_code === '') {
+      showError(t('请输入邮箱验证码！'));
+      return;
+    }
+    setEmailBindLoading(true);
+    try {
+      const res = await API.get(
+        `/api/oauth/email/bind?email=${inputs.email}&code=${inputs.email_verification_code}`,
+      );
+      const { success, message } = res.data;
+      if (success) {
+        showSuccess(t('邮箱账户绑定成功！'));
+        setShowEmailBindModal(false);
+        await getUserQuota();
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(t('请求失败'));
+    } finally {
+      setEmailBindLoading(false);
     }
   };
 
@@ -605,6 +678,31 @@ const TopUp = () => {
   }, []);
 
   useEffect(() => {
+    const status = statusState?.status;
+    if (!status) return;
+    if (status.turnstile_check) {
+      setTurnstileEnabled(true);
+      setTurnstileSiteKey(status.turnstile_site_key || '');
+    } else {
+      setTurnstileEnabled(false);
+      setTurnstileSiteKey('');
+    }
+  }, [statusState?.status]);
+
+  useEffect(() => {
+    let countdownInterval = null;
+    if (disableEmailButton && emailCountdown > 0) {
+      countdownInterval = setInterval(() => {
+        setEmailCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (emailCountdown === 0) {
+      setDisableEmailButton(false);
+      setEmailCountdown(30);
+    }
+    return () => clearInterval(countdownInterval);
+  }, [disableEmailButton, emailCountdown]);
+
+  useEffect(() => {
     if (affFetchedRef.current) return;
     affFetchedRef.current = true;
     getAffLink().then();
@@ -780,6 +878,22 @@ const TopUp = () => {
         t={t}
       />
 
+      <EmailBindModal
+        t={t}
+        showEmailBindModal={showEmailBindModal}
+        setShowEmailBindModal={setShowEmailBindModal}
+        inputs={inputs}
+        handleInputChange={handleEmailInputChange}
+        sendVerificationCode={sendVerificationCode}
+        bindEmail={bindEmail}
+        disableButton={disableEmailButton}
+        loading={emailBindLoading}
+        countdown={emailCountdown}
+        turnstileEnabled={turnstileEnabled}
+        turnstileSiteKey={turnstileSiteKey}
+        setTurnstileToken={setTurnstileToken}
+      />
+
       {/* Creem 充值确认模态框 */}
       <Modal
         title={t('确定要充值 $')}
@@ -852,6 +966,7 @@ const TopUp = () => {
           activeSubscriptions={activeSubscriptions}
           allSubscriptions={allSubscriptions}
           reloadSubscriptionSelf={getSubscriptionSelf}
+          onOpenEmailBind={() => setShowEmailBindModal(true)}
         />
         <InvitationCard
           t={t}

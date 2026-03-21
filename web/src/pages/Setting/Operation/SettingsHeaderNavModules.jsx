@@ -190,7 +190,7 @@ export default function SettingsHeaderNavModules(props) {
     {
       key: 'logs',
       title: t('日志'),
-      description: `${t('使用日志')} / ${t('绘图日志')} / ${t('任务日志')}`,
+      description: t('使用日志'),
     },
     {
       key: 'pricing',
