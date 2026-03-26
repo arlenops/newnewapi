@@ -34,6 +34,7 @@ export const useNavigation = (t, docsLink, headerNavModules, userState) => {
       pricing: true,
       docs: true,
       about: true,
+      claws: true,
     };
 
     const rawPricingConfig = headerNavModules?.pricing;
@@ -110,6 +111,12 @@ export const useNavigation = (t, docsLink, headerNavModules, userState) => {
         text: t('关于'),
         itemKey: 'about',
         to: '/about',
+      },
+      {
+        text: t('claws客户端'),
+        itemKey: 'claws',
+        isExternal: true,
+        externalLink: 'https://claws.oioiart.com/',
       },
     ];
 

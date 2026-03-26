@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Dropdown } from '@douyinfe/semi-ui';
 import { IconChevronDown } from '@douyinfe/semi-icons';
 import SkeletonWrapper from '../components/SkeletonWrapper';
@@ -31,6 +31,7 @@ const Navigation = ({
   pricingRequireAuth,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const resolveTargetPath = (item, parentItem = null) => {
     const requiresAuth =
@@ -47,14 +48,59 @@ const Navigation = ({
 
   const renderNavLinks = () => {
     const baseClasses =
-      'flex-shrink-0 flex items-center gap-1 font-semibold rounded-md transition-all duration-200 ease-in-out';
-    const hoverClasses = 'hover:text-semi-color-primary';
+      'flex-shrink-0 flex items-center gap-1 rounded-md font-semibold transition-all duration-200 ease-in-out';
     const spacingClasses = isMobile ? 'p-1' : 'p-2';
 
-    const commonLinkClasses = `${baseClasses} ${spacingClasses} ${hoverClasses}`;
+    const commonLinkClasses = `${baseClasses} ${spacingClasses}`;
+    const clawsLinkClasses = isMobile
+      ? `${baseClasses} ${spacingClasses}`
+      : `${baseClasses} ${spacingClasses}`;
+
+    const isPathActive = (link) => {
+      if (!link || link.isExternal) {
+        return false;
+      }
+
+      if (Array.isArray(link.children) && link.children.length > 0) {
+        return link.children.some((child) => isPathActive(child));
+      }
+
+      const pathname = location.pathname || '/';
+      const targetPath = link.to || '';
+
+      if (!targetPath) {
+        return false;
+      }
+
+      if (link.itemKey === 'home') {
+        return pathname === '/';
+      }
+
+      if (link.itemKey === 'logs') {
+        return (
+          pathname.startsWith('/log') ||
+          pathname.startsWith('/midjourney') ||
+          pathname.startsWith('/task')
+        );
+      }
+
+      return pathname === targetPath || pathname.startsWith(`${targetPath}/`);
+    };
 
     return mainNavLinks.map((link) => {
       const linkContent = <span>{link.text}</span>;
+      const baseLinkClasses =
+        link.itemKey === 'claws' ? clawsLinkClasses : commonLinkClasses;
+      const isActive = isPathActive(link);
+      const linkClasses = baseLinkClasses;
+      const linkStyle =
+        link.itemKey === 'claws'
+          ? {
+              color: '#2563eb',
+            }
+          : {
+              color: isActive ? '#111111' : 'rgba(17, 17, 17, 0.42)',
+            };
 
       if (link.isExternal) {
         return (
@@ -63,7 +109,8 @@ const Navigation = ({
             href={link.externalLink}
             target='_blank'
             rel='noopener noreferrer'
-            className={commonLinkClasses}
+            className={linkClasses}
+            style={linkStyle}
           >
             {linkContent}
           </a>
@@ -115,7 +162,8 @@ const Navigation = ({
           >
             <button
               type='button'
-              className={`${commonLinkClasses} !border-0 !bg-transparent`}
+              className={`${linkClasses} !border-0 !bg-transparent`}
+              style={linkStyle}
             >
               <span>{link.text}</span>
               <IconChevronDown size='small' />
@@ -126,7 +174,12 @@ const Navigation = ({
 
       const targetPath = resolveTargetPath(link);
       return (
-        <Link key={link.itemKey} to={targetPath} className={commonLinkClasses}>
+        <Link
+          key={link.itemKey}
+          to={targetPath}
+          className={linkClasses}
+          style={linkStyle}
+        >
           {linkContent}
         </Link>
       );

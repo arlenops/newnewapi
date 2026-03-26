@@ -41,6 +41,13 @@ import {
 
 const { Text } = Typography;
 
+const ALERT_THRESHOLD_OPTIONS = [
+  { value: 100000, label: '0.2$' },
+  { value: 500000, label: '1$' },
+  { value: 1000000, label: '2$' },
+  { value: 5000000, label: '10$' },
+];
+
 // 过滤易支付方式
 function getEpayMethods(payMethods = []) {
   return (payMethods || []).filter(
@@ -84,6 +91,10 @@ const SubscriptionPlansCard = ({
   reloadSubscriptionSelf,
   withCard = true,
   onOpenEmailBind,
+  balanceAlertThreshold,
+  onChangeBalanceAlertThreshold,
+  onSaveBalanceAlertSettings,
+  balanceAlertSaving = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -638,18 +649,82 @@ const SubscriptionPlansCard = ({
                 })}
               </div>
 
-              {onOpenEmailBind && (
-                <div className='flex items-center justify-center gap-2 pt-5 pb-1 text-sm'>
-                  <Text type='tertiary'>{t('余额不足警报')}:</Text>
-                  <Button
-                    type='primary'
-                    theme='borderless'
-                    size='small'
-                    onClick={onOpenEmailBind}
-                    className='!px-1'
+              {(onOpenEmailBind || onSaveBalanceAlertSettings) && (
+                <div className='wallet-premium__alert-stack'>
+                  {onOpenEmailBind && (
+                    <div className='wallet-premium__alert-email-row'>
+                      <Text
+                        type='tertiary'
+                        className='wallet-premium__alert-threshold-label'
+                      >
+                        {t('余额警报')}:
+                      </Text>
+                      <div className='wallet-premium__alert-email-control'>
+                        <Button
+                          type='primary'
+                          size='small'
+                          className='wallet-premium__alert-email-btn'
+                          onClick={onOpenEmailBind}
+                        >
+                          {t('绑定邮箱')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {onSaveBalanceAlertSettings && (
+                    <div className='wallet-premium__alert-threshold-row'>
+                      <Text
+                        type='tertiary'
+                        className='wallet-premium__alert-threshold-label'
+                      >
+                        {t('设置警报额度')}:
+                      </Text>
+                      <div className='wallet-premium__alert-threshold-control'>
+                        <div className='wallet-premium__alert-chip-group'>
+                          {ALERT_THRESHOLD_OPTIONS.map((option) => {
+                            const isActive =
+                              Number(balanceAlertThreshold) === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type='button'
+                                className={`wallet-premium__alert-chip ${
+                                  isActive
+                                    ? 'wallet-premium__alert-chip--active'
+                                    : ''
+                                }`}
+                                onClick={() =>
+                                  onChangeBalanceAlertThreshold(option.value)
+                                }
+                              >
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <Button
+                          type='primary'
+                          size='small'
+                          className='wallet-premium__alert-save-btn'
+                          loading={balanceAlertSaving}
+                          onClick={onSaveBalanceAlertSettings}
+                        >
+                          {t('保存')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <Text type='tertiary' className='wallet-premium__alert-note'>
+                    {t('公告提醒')}
+                  </Text>
+                  <Text
+                    type='tertiary'
+                    className='wallet-premium__alert-note-body'
                   >
-                    {t('绑定邮箱')}
-                  </Button>
+                    {t(
+                      '注:套餐或额度充值后，非本站原因（如因用户不会配置api导致调用失败）不支持退款，本站不提供免费技术支持，请自行查看文档，如需申请额度测试，请联系客服微信:gptai6',
+                    )}
+                  </Text>
                 </div>
               )}
             </div>

@@ -117,6 +117,19 @@ const TopUp = () => {
   const [emailBindLoading, setEmailBindLoading] = useState(false);
   const [disableEmailButton, setDisableEmailButton] = useState(false);
   const [emailCountdown, setEmailCountdown] = useState(30);
+  const [balanceAlertSettings, setBalanceAlertSettings] = useState({
+    warningThreshold: 1000000,
+    notificationEmail: '',
+    webhookUrl: '',
+    webhookSecret: '',
+    barkUrl: '',
+    gotifyUrl: '',
+    gotifyToken: '',
+    gotifyPriority: 5,
+    acceptUnsetModelRatioModel: false,
+    recordIpLog: false,
+  });
+  const [balanceAlertSaving, setBalanceAlertSaving] = useState(false);
 
   // 订阅相关
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
@@ -665,6 +678,41 @@ const TopUp = () => {
   };
 
   useEffect(() => {
+    if (!userState?.user?.setting) {
+      setBalanceAlertSettings((prev) => ({
+        ...prev,
+        warningThreshold: 1000000,
+        notificationEmail: '',
+      }));
+      return;
+    }
+
+    try {
+      const settings = JSON.parse(userState.user.setting);
+      setBalanceAlertSettings({
+        warningThreshold: settings.quota_warning_threshold || 1000000,
+        notificationEmail: settings.notification_email || '',
+        webhookUrl: settings.webhook_url || '',
+        webhookSecret: settings.webhook_secret || '',
+        barkUrl: settings.bark_url || '',
+        gotifyUrl: settings.gotify_url || '',
+        gotifyToken: settings.gotify_token || '',
+        gotifyPriority:
+          settings.gotify_priority !== undefined ? settings.gotify_priority : 5,
+        acceptUnsetModelRatioModel:
+          settings.accept_unset_model_ratio_model || false,
+        recordIpLog: settings.record_ip_log || false,
+      });
+    } catch (error) {
+      setBalanceAlertSettings((prev) => ({
+        ...prev,
+        warningThreshold: 1000000,
+        notificationEmail: '',
+      }));
+    }
+  }, [userState?.user?.setting]);
+
+  useEffect(() => {
     document.body.classList.add('wallet-premium-active');
     return () => {
       document.body.classList.remove('wallet-premium-active');
@@ -737,6 +785,49 @@ const TopUp = () => {
 
   const renderAmount = () => {
     return amount + ' ' + t('元');
+  };
+
+  const handleBalanceAlertThresholdChange = (value) => {
+    setBalanceAlertSettings((prev) => ({
+      ...prev,
+      warningThreshold: Number(value) || prev.warningThreshold,
+    }));
+  };
+
+  const saveBalanceAlertSettings = async () => {
+    setBalanceAlertSaving(true);
+    try {
+      const res = await API.put('/api/user/setting', {
+        notify_type: 'email',
+        quota_warning_threshold: parseFloat(
+          balanceAlertSettings.warningThreshold,
+        ),
+        webhook_url: balanceAlertSettings.webhookUrl,
+        webhook_secret: balanceAlertSettings.webhookSecret,
+        notification_email: balanceAlertSettings.notificationEmail,
+        bark_url: balanceAlertSettings.barkUrl,
+        gotify_url: balanceAlertSettings.gotifyUrl,
+        gotify_token: balanceAlertSettings.gotifyToken,
+        gotify_priority: (() => {
+          const parsed = parseInt(balanceAlertSettings.gotifyPriority);
+          return isNaN(parsed) ? 5 : parsed;
+        })(),
+        accept_unset_model_ratio_model:
+          balanceAlertSettings.acceptUnsetModelRatioModel,
+        record_ip_log: balanceAlertSettings.recordIpLog,
+      });
+
+      if (res.data?.success) {
+        showSuccess(t('设置保存成功'));
+        await getUserQuota();
+      } else {
+        showError(res.data?.message || t('设置保存失败'));
+      }
+    } catch (error) {
+      showError(t('设置保存失败'));
+    } finally {
+      setBalanceAlertSaving(false);
+    }
   };
 
   const getAmount = async (value) => {
@@ -967,6 +1058,10 @@ const TopUp = () => {
           allSubscriptions={allSubscriptions}
           reloadSubscriptionSelf={getSubscriptionSelf}
           onOpenEmailBind={() => setShowEmailBindModal(true)}
+          balanceAlertThreshold={balanceAlertSettings.warningThreshold}
+          onChangeBalanceAlertThreshold={handleBalanceAlertThresholdChange}
+          onSaveBalanceAlertSettings={saveBalanceAlertSettings}
+          balanceAlertSaving={balanceAlertSaving}
         />
         <InvitationCard
           t={t}

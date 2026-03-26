@@ -126,6 +126,12 @@ func SetApiRouter(router *gin.Engine) {
 				adminRoute.GET("/2fa/stats", controller.Admin2FAStats)
 				adminRoute.DELETE("/:id/2fa", controller.AdminDisable2FA)
 			}
+
+			adminToolsRoute := userRoute.Group("/admin")
+			adminToolsRoute.Use(middleware.AdminAuth())
+			{
+				adminToolsRoute.GET("/payment_records", controller.GetPaymentRecords)
+			}
 		}
 
 		// Subscription billing (plans, purchase, admin management)

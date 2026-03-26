@@ -38,6 +38,7 @@ const routerMap = {
   topup: '/console/topup',
   user: '/console/user',
   subscription: '/console/subscription',
+  payment_records: '/console/payment-records',
   log: '/console/log',
   midjourney: '/console/midjourney',
   setting: '/console/setting',
@@ -188,6 +189,12 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         itemKey: 'setting',
         to: '/setting',
         className: isRoot() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('付款记录'),
+        itemKey: 'payment_records',
+        to: '/payment-records',
+        className: isAdmin() ? '' : 'tableHiddle',
       },
     ];
 

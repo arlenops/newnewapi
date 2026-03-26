@@ -95,6 +95,10 @@ const RechargeCard = ({
   allSubscriptions = [],
   reloadSubscriptionSelf,
   onOpenEmailBind,
+  balanceAlertThreshold,
+  onChangeBalanceAlertThreshold,
+  onSaveBalanceAlertSettings,
+  balanceAlertSaving,
 }) => {
   const onlineFormApiRef = useRef(null);
   const redeemFormApiRef = useRef(null);
@@ -593,6 +597,10 @@ const RechargeCard = ({
                 reloadSubscriptionSelf={reloadSubscriptionSelf}
                 withCard={false}
                 onOpenEmailBind={onOpenEmailBind}
+                balanceAlertThreshold={balanceAlertThreshold}
+                onChangeBalanceAlertThreshold={onChangeBalanceAlertThreshold}
+                onSaveBalanceAlertSettings={onSaveBalanceAlertSettings}
+                balanceAlertSaving={balanceAlertSaving}
               />
             </div>
           </TabPane>

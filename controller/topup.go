@@ -388,6 +388,22 @@ func GetAllTopUps(c *gin.Context) {
 	common.ApiSuccess(c, pageInfo)
 }
 
+// GetPaymentRecords 管理员获取成功付款记录
+func GetPaymentRecords(c *gin.Context) {
+	pageInfo := common.GetPageQuery(c)
+	keyword := c.Query("keyword")
+
+	items, total, err := model.GetAllPaymentRecords(keyword, pageInfo)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+
+	pageInfo.SetTotal(int(total))
+	pageInfo.SetItems(items)
+	common.ApiSuccess(c, pageInfo)
+}
+
 type AdminCompleteTopupRequest struct {
 	TradeNo string `json:"trade_no"`
 }

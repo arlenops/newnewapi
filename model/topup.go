@@ -23,6 +23,20 @@ type TopUp struct {
 	Status        string  `json:"status"`
 }
 
+type PaymentRecord struct {
+	Id            int     `json:"id" gorm:"column:id"`
+	UserId        int     `json:"user_id" gorm:"column:user_id"`
+	Username      string  `json:"username" gorm:"column:username"`
+	DisplayName   string  `json:"display_name" gorm:"column:display_name"`
+	Email         string  `json:"email" gorm:"column:email"`
+	Money         float64 `json:"money" gorm:"column:money"`
+	PaymentMethod string  `json:"payment_method" gorm:"column:payment_method"`
+	TradeNo       string  `json:"trade_no" gorm:"column:trade_no"`
+	CreateTime    int64   `json:"create_time" gorm:"column:create_time"`
+	CompleteTime  int64   `json:"complete_time" gorm:"column:complete_time"`
+	Status        string  `json:"status" gorm:"column:status"`
+}
+
 func (topUp *TopUp) Insert() error {
 	var err error
 	err = DB.Create(topUp).Error
@@ -233,6 +247,54 @@ func SearchAllTopUps(keyword string, pageInfo *common.PageInfo) (topups []*TopUp
 		return nil, 0, err
 	}
 	return topups, total, nil
+}
+
+// GetAllPaymentRecords 获取全平台成功付款记录（管理员使用）
+func GetAllPaymentRecords(keyword string, pageInfo *common.PageInfo) (items []PaymentRecord, total int64, err error) {
+	tx := DB.Begin()
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	query := tx.Model(&TopUp{}).
+		Joins("LEFT JOIN users ON users.id = top_ups.user_id").
+		Where("top_ups.status = ?", common.TopUpStatusSuccess)
+
+	if keyword != "" {
+		like := "%%" + keyword + "%%"
+		query = query.Where(
+			"top_ups.trade_no LIKE ? OR users.username LIKE ? OR users.display_name LIKE ?",
+			like,
+			like,
+			like,
+		)
+	}
+
+	if err = query.Count(&total).Error; err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+		if err = query.
+			Select("top_ups.id, top_ups.user_id, users.username, users.display_name, users.email, top_ups.money, top_ups.payment_method, top_ups.trade_no, top_ups.create_time, top_ups.complete_time, top_ups.status").
+			Order("top_ups.id desc").
+			Limit(pageInfo.GetPageSize()).
+			Offset(pageInfo.GetStartIdx()).
+		Scan(&items).Error; err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	if err = tx.Commit().Error; err != nil {
+		return nil, 0, err
+	}
+
+	return items, total, nil
 }
 
 // ManualCompleteTopUp 管理员手动完成订单并给用户充值

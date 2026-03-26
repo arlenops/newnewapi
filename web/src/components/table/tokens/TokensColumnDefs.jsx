@@ -268,7 +268,7 @@ const renderQuotaUsage = (text, record, t) => {
     return (
       <Popover content={popoverContent} position='top'>
         <Tag color='white' shape='circle'>
-          {t('无限额度')}
+          {t('根据钱包额度')}
         </Tag>
       </Popover>
     );

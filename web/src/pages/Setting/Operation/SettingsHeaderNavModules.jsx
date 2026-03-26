@@ -45,6 +45,7 @@ const DEFAULT_HEADER_NAV_MODULES = {
   },
   docs: true,
   about: true,
+  claws: true,
 };
 
 const normalizeHeaderNavModules = (modules) => {
@@ -207,6 +208,11 @@ export default function SettingsHeaderNavModules(props) {
       key: 'about',
       title: t('关于'),
       description: t('关于系统的详细信息'),
+    },
+    {
+      key: 'claws',
+      title: t('claws客户端'),
+      description: t('下载 Claws 客户端'),
     },
   ];
 
