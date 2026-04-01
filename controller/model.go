@@ -164,13 +164,14 @@ func ListModels(c *gin.Context, modelType int) {
 		}
 		group := userGroup
 		tokenGroup := common.GetContextKeyString(c, constant.ContextKeyTokenGroup)
+		tokenCrossGroupRetry := common.GetContextKeyBool(c, constant.ContextKeyTokenCrossGroupRetry)
 		if tokenGroup != "" {
 			group = tokenGroup
 		}
 		var models []string
-		if tokenGroup == "auto" {
-			for _, autoGroup := range service.GetUserAutoGroup(userGroup) {
-				groupModels := model.GetGroupEnabledModels(autoGroup)
+		if tokenGroup == "auto" || (tokenGroup != "" && tokenCrossGroupRetry) {
+			for _, retryGroup := range service.GetUserEffectiveRetryGroups(userId, userGroup, tokenGroup) {
+				groupModels := model.GetGroupEnabledModels(retryGroup)
 				for _, g := range groupModels {
 					if !common.StringsContains(models, g) {
 						models = append(models, g)

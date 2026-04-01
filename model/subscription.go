@@ -385,6 +385,41 @@ func CountUserSubscriptionsByPlan(userId int, planId int) (int64, error) {
 	return count, nil
 }
 
+// GetActiveSubscriptionPermissionGroups returns the extra permission groups
+// granted by active subscriptions. PrevUserGroup is included as a compatibility
+// fallback for legacy subscriptions that used to overwrite user.group.
+func GetActiveSubscriptionPermissionGroups(userId int) ([]string, error) {
+	if userId <= 0 {
+		return nil, errors.New("invalid userId")
+	}
+	now := GetDBTimestamp()
+	var subs []UserSubscription
+	if err := DB.Select("upgrade_group", "prev_user_group").
+		Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''", userId, "active", now).
+		Order("end_time desc, id desc").
+		Find(&subs).Error; err != nil {
+		return nil, err
+	}
+	groups := make([]string, 0, len(subs)*2)
+	seen := make(map[string]struct{}, len(subs)*2)
+	appendGroup := func(group string) {
+		group = strings.TrimSpace(group)
+		if group == "" || group == "auto" {
+			return
+		}
+		if _, ok := seen[group]; ok {
+			return
+		}
+		seen[group] = struct{}{}
+		groups = append(groups, group)
+	}
+	for _, sub := range subs {
+		appendGroup(sub.UpgradeGroup)
+		appendGroup(sub.PrevUserGroup)
+	}
+	return groups, nil
+}
+
 func getUserGroupByIdTx(tx *gorm.DB, userId int) (string, error) {
 	if userId <= 0 {
 		return "", errors.New("invalid userId")
@@ -476,10 +511,6 @@ func CreateUserSubscriptionFromPlanTx(tx *gorm.DB, userId int, plan *Subscriptio
 		}
 		if currentGroup != upgradeGroup {
 			prevGroup = currentGroup
-			if err := tx.Model(&User{}).Where("id = ?", userId).
-				Update("group", upgradeGroup).Error; err != nil {
-				return nil, err
-			}
 		}
 	}
 	sub := &UserSubscription{

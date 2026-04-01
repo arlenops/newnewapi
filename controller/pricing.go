@@ -30,7 +30,11 @@ func GetPricing(c *gin.Context) {
 		}
 	}
 
-	usableGroup = service.GetUserUsableGroups(group)
+	effectiveUserId := 0
+	if exists {
+		effectiveUserId = userId.(int)
+	}
+	usableGroup = service.GetUserEffectiveGroups(effectiveUserId, group)
 	// check groupRatio contains usableGroup
 	for group := range ratio_setting.GetGroupRatioCopy() {
 		if _, ok := usableGroup[group]; !ok {
@@ -45,7 +49,7 @@ func GetPricing(c *gin.Context) {
 		"group_ratio":        groupRatio,
 		"usable_group":       usableGroup,
 		"supported_endpoint": model.GetSupportedEndpointMap(),
-		"auto_groups":        service.GetUserAutoGroup(group),
+		"auto_groups":        service.GetUserEffectiveAutoGroup(effectiveUserId, group),
 		"_":                  "a42d372ccf0b5dd13ecf71203521f9d2",
 	})
 }
