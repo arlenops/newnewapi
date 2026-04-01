@@ -385,9 +385,9 @@ func CountUserSubscriptionsByPlan(userId int, planId int) (int64, error) {
 	return count, nil
 }
 
-// GetActiveSubscriptionPermissionGroups returns the extra permission groups
-// granted by active subscriptions. PrevUserGroup is included as a compatibility
-// fallback for legacy subscriptions that used to overwrite user.group.
+// GetActiveSubscriptionPermissionGroups returns the restricted groups granted
+// by active subscriptions. When at least one active subscription has a
+// configured group, requests should stay within this scope.
 func GetActiveSubscriptionPermissionGroups(userId int) ([]string, error) {
 	if userId <= 0 {
 		return nil, errors.New("invalid userId")
@@ -400,8 +400,8 @@ func GetActiveSubscriptionPermissionGroups(userId int) ([]string, error) {
 		Find(&subs).Error; err != nil {
 		return nil, err
 	}
-	groups := make([]string, 0, len(subs)*2)
-	seen := make(map[string]struct{}, len(subs)*2)
+	groups := make([]string, 0, len(subs))
+	seen := make(map[string]struct{}, len(subs))
 	appendGroup := func(group string) {
 		group = strings.TrimSpace(group)
 		if group == "" || group == "auto" {
@@ -415,7 +415,6 @@ func GetActiveSubscriptionPermissionGroups(userId int) ([]string, error) {
 	}
 	for _, sub := range subs {
 		appendGroup(sub.UpgradeGroup)
-		appendGroup(sub.PrevUserGroup)
 	}
 	return groups, nil
 }

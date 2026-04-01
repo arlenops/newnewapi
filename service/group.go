@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
@@ -43,33 +44,35 @@ func GroupInUserUsableGroups(userGroup, groupName string) bool {
 	return ok
 }
 
-func mergeExtraGroups(groups map[string]string, extraGroups []string) map[string]string {
-	for _, group := range extraGroups {
+// GetUserEffectiveGroups returns the actual groups the user can use now.
+// If there are active subscription groups configured, they become the effective
+// restriction scope; otherwise it falls back to the user's normal usable
+// groups.
+func GetUserEffectiveGroups(userId int, userGroup string) map[string]string {
+	baseGroups := GetUserUsableGroups(userGroup)
+	if userId <= 0 {
+		return baseGroups
+	}
+	restrictedGroups, err := model.GetActiveSubscriptionPermissionGroups(userId)
+	if err != nil {
+		common.SysLog("failed to load active subscription permission groups: " + err.Error())
+		return baseGroups
+	}
+	if len(restrictedGroups) == 0 {
+		return baseGroups
+	}
+	groups := make(map[string]string, len(restrictedGroups))
+	for _, group := range restrictedGroups {
 		group = strings.TrimSpace(group)
 		if group == "" || group == "auto" {
 			continue
 		}
-		if _, ok := groups[group]; ok {
-			continue
-		}
 		groups[group] = setting.GetUsableGroupDescription(group)
 	}
+	if len(groups) == 0 {
+		return baseGroups
+	}
 	return groups
-}
-
-// GetUserEffectiveGroups returns the user's base usable groups plus any
-// additional permissions granted by active subscriptions.
-func GetUserEffectiveGroups(userId int, userGroup string) map[string]string {
-	groups := GetUserUsableGroups(userGroup)
-	if userId <= 0 {
-		return groups
-	}
-	extraGroups, err := model.GetActiveSubscriptionPermissionGroups(userId)
-	if err != nil {
-		common.SysLog("failed to load active subscription permission groups: " + err.Error())
-		return groups
-	}
-	return mergeExtraGroups(groups, extraGroups)
 }
 
 func GroupInUserEffectiveGroups(userId int, userGroup, groupName string) bool {
@@ -90,9 +93,9 @@ func GetUserAutoGroup(userGroup string) []string {
 }
 
 // GetUserEffectiveAutoGroup returns auto routing groups within the user's
-// effective permission scope. It preserves the configured auto group order,
-// then appends any active subscription permission groups and the base group as
-// a final fallback.
+// effective permission scope. It keeps configured auto groups first, then adds
+// the current user group and the remaining effective groups as fallbacks to
+// improve cross-group hit rate.
 func GetUserEffectiveAutoGroup(userId int, userGroup string) []string {
 	groups := GetUserEffectiveGroups(userId, userGroup)
 	autoGroups := make([]string, 0)
@@ -115,15 +118,15 @@ func GetUserEffectiveAutoGroup(userId int, userGroup string) []string {
 	for _, group := range setting.GetAutoGroups() {
 		appendGroup(group)
 	}
-	extraGroups, err := model.GetActiveSubscriptionPermissionGroups(userId)
-	if err != nil {
-		common.SysLog("failed to load active subscription auto groups: " + err.Error())
-	} else {
-		for _, group := range extraGroups {
-			appendGroup(group)
-		}
-	}
 	appendGroup(userGroup)
+	remainingGroups := make([]string, 0, len(groups))
+	for group := range groups {
+		remainingGroups = append(remainingGroups, group)
+	}
+	sort.Strings(remainingGroups)
+	for _, group := range remainingGroups {
+		appendGroup(group)
+	}
 	return autoGroups
 }
 
