@@ -54,6 +54,23 @@ export function setStatusData(data) {
   } else {
     localStorage.removeItem('docs_link');
   }
+
+  if (typeof document !== 'undefined') {
+    const systemName = (data.system_name || '').trim();
+    if (systemName) {
+      document.title = systemName;
+    }
+    const logo = (data.logo || '').trim();
+    if (logo) {
+      let favicon = document.querySelector("link[rel~='icon']");
+      if (!favicon) {
+        favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        document.head.appendChild(favicon);
+      }
+      favicon.href = logo;
+    }
+  }
 }
 
 export function setUserData(data) {

@@ -166,6 +166,7 @@ func main() {
 	})
 	server.Use(sessions.Sessions("session", store))
 
+	InjectSiteBranding()
 	InjectUmamiAnalytics()
 	InjectGoogleAnalytics()
 
@@ -224,6 +225,39 @@ func InjectGoogleAnalytics() {
 	analyticsInjectBuilder.WriteString("<!--Google Analytics QuantumNous-->\n")
 	analyticsInject := analyticsInjectBuilder.String()
 	indexPage = bytes.ReplaceAll(indexPage, []byte("<!--Google Analytics-->\n"), []byte(analyticsInject))
+}
+
+func InjectSiteBranding() {
+	systemName := strings.TrimSpace(common.SystemName)
+	if systemName == "" {
+		systemName = "New API"
+	}
+
+	logo := strings.TrimSpace(common.Logo)
+	if logo == "" {
+		logo = "/logo.png"
+	}
+
+	brandingInjectBuilder := &strings.Builder{}
+	brandingInjectBuilder.WriteString("<script>")
+	brandingInjectBuilder.WriteString("(function(){try{")
+	brandingInjectBuilder.WriteString("var systemName=(localStorage.getItem('system_name')||")
+	brandingInjectBuilder.WriteString(strconv.Quote(systemName))
+	brandingInjectBuilder.WriteString("||'').trim();")
+	brandingInjectBuilder.WriteString("if(systemName){document.title=systemName;}")
+	brandingInjectBuilder.WriteString("var logo=(localStorage.getItem('logo')||")
+	brandingInjectBuilder.WriteString(strconv.Quote(logo))
+	brandingInjectBuilder.WriteString("||'').trim();")
+	brandingInjectBuilder.WriteString("if(logo){")
+	brandingInjectBuilder.WriteString("var favicon=document.querySelector(\"link[rel~='icon']\");")
+	brandingInjectBuilder.WriteString("if(!favicon){favicon=document.createElement('link');favicon.rel='icon';document.head.appendChild(favicon);}")
+	brandingInjectBuilder.WriteString("favicon.href=logo;")
+	brandingInjectBuilder.WriteString("}")
+	brandingInjectBuilder.WriteString("}catch(e){}})();")
+	brandingInjectBuilder.WriteString("</script>\n")
+	brandingInjectBuilder.WriteString("<!--site-branding-->\n")
+	brandingInject := brandingInjectBuilder.String()
+	indexPage = bytes.ReplaceAll(indexPage, []byte("<!--site-branding-->\n"), []byte(brandingInject))
 }
 
 func InitResources() error {
