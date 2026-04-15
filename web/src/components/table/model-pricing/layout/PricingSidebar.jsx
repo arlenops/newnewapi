@@ -23,6 +23,7 @@ import { Button } from '@douyinfe/semi-ui';
 import { getLobeHubIcon } from '../../../../helpers';
 import { resetPricingFilters } from '../../../../helpers/utils';
 import { usePricingFilterCounts } from '../../../../hooks/model-pricing/usePricingFilterCounts';
+import PricingGroups from '../filter/PricingGroups';
 
 const PricingSidebar = ({
   showWithRecharge,
@@ -187,42 +188,6 @@ const PricingSidebar = ({
     ];
   }, [allModels, tagModels, t]);
 
-  const groupOptions = React.useMemo(() => {
-    const groups = [
-      'all',
-      ...Object.keys(categoryProps.usableGroup || {}).filter(Boolean),
-    ];
-    return groups.map((group) => {
-      const count =
-        group === 'all'
-          ? groupCountModels.length
-          : groupCountModels.filter(
-              (model) =>
-                Array.isArray(model.enable_groups) &&
-                model.enable_groups.includes(group),
-            ).length;
-      if (group === 'all') {
-        return {
-          label: `${t('全部分组')} (${count})`,
-          value: group,
-        };
-      }
-      const ratio = categoryProps.groupRatio?.[group];
-      const ratioText =
-        ratio !== undefined && ratio !== null ? `x${ratio}` : 'x1';
-      return {
-        label: `${group} (${ratioText})`,
-        value: group,
-        disabled: count === 0,
-      };
-    });
-  }, [
-    categoryProps.usableGroup,
-    categoryProps.groupRatio,
-    groupCountModels,
-    t,
-  ]);
-
   const quotaTypeOptions = React.useMemo(() => {
     const countAll = quotaTypeModels.length;
     const countByQuantity = quotaTypeModels.filter(
@@ -379,20 +344,15 @@ const PricingSidebar = ({
         </div>
 
         <div className='market-premium__filter-row'>
-          <span className='market-premium__filter-row-label'>
-            {t('可用分组')}
-          </span>
-          <div className='market-premium__filter-control'>
-            <select
-              className='market-premium__filter-native-select'
-              value={String(filterGroup ?? 'all')}
-              onChange={(event) => handleGroupClick(event.target.value || 'all')}
-              disabled={loading}
-              aria-label={t('可用分组')}
-            >
-              {renderNativeOptions(groupOptions)}
-            </select>
-          </div>
+          <PricingGroups
+            filterGroup={filterGroup}
+            setFilterGroup={handleGroupClick}
+            usableGroup={categoryProps.usableGroup}
+            groupRatio={categoryProps.groupRatio}
+            models={groupCountModels}
+            loading={loading}
+            t={t}
+          />
         </div>
 
         <div className='market-premium__filter-row'>

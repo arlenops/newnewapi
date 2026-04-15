@@ -328,13 +328,13 @@ func TokenAuth() func(c *gin.Context) {
 		tokenGroup := token.Group
 		if tokenGroup != "" {
 			groupAllowed := service.GroupInUserEffectiveGroups(token.UserId, userGroup, tokenGroup)
-			if !groupAllowed && !token.CrossGroupRetry && tokenGroup != "auto" {
+			if !groupAllowed && tokenGroup != "auto" {
 				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("无权访问 %s 分组", tokenGroup))
 				return
 			}
 			// check group in common.GroupRatio
 			if !ratio_setting.ContainsGroupRatio(tokenGroup) {
-				if tokenGroup != "auto" && !token.CrossGroupRetry {
+				if tokenGroup != "auto" {
 					abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("分组 %s 已被弃用", tokenGroup))
 					return
 				}

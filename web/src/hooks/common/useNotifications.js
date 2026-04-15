@@ -42,6 +42,20 @@ export const useNotifications = (statusState) => {
       .length;
   };
 
+  const markRead = (items = announcements) => {
+    if (!items.length) return;
+    let readKeys = [];
+    try {
+      readKeys = JSON.parse(localStorage.getItem('notice_read_keys')) || [];
+    } catch (_) {
+      readKeys = [];
+    }
+    const mergedKeys = Array.from(
+      new Set([...readKeys, ...items.map(getAnnouncementKey)]),
+    );
+    localStorage.setItem('notice_read_keys', JSON.stringify(mergedKeys));
+  };
+
   const getUnreadKeys = () => {
     if (!announcements.length) return [];
     let readKeys = [];
@@ -68,18 +82,11 @@ export const useNotifications = (statusState) => {
 
   const handleNoticeClose = () => {
     setNoticeVisible(false);
-    if (announcements.length) {
-      let readKeys = [];
-      try {
-        readKeys = JSON.parse(localStorage.getItem('notice_read_keys')) || [];
-      } catch (_) {
-        readKeys = [];
-      }
-      const mergedKeys = Array.from(
-        new Set([...readKeys, ...announcements.map(getAnnouncementKey)]),
-      );
-      localStorage.setItem('notice_read_keys', JSON.stringify(mergedKeys));
-    }
+    setUnreadCount(calculateUnreadCount());
+  };
+
+  const markAllRead = () => {
+    markRead(announcements);
     setUnreadCount(0);
   };
 
@@ -90,5 +97,6 @@ export const useNotifications = (statusState) => {
     handleNoticeOpen,
     handleNoticeClose,
     getUnreadKeys,
+    markAllRead,
   };
 };

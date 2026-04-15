@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/pkg/cachex"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
@@ -51,6 +52,7 @@ type channelAffinityMeta struct {
 	KeyFingerprint string
 	UsingGroup     string
 	ModelName      string
+	EndpointType   constant.EndpointType
 	RequestPath    string
 }
 
@@ -311,13 +313,16 @@ func extractChannelAffinityValue(c *gin.Context, src operation_setting.ChannelAf
 	}
 }
 
-func buildChannelAffinityCacheKeySuffix(rule operation_setting.ChannelAffinityRule, usingGroup string, affinityValue string) string {
-	parts := make([]string, 0, 3)
+func buildChannelAffinityCacheKeySuffix(rule operation_setting.ChannelAffinityRule, usingGroup string, endpointType constant.EndpointType, affinityValue string) string {
+	parts := make([]string, 0, 4)
 	if rule.IncludeRuleName && rule.Name != "" {
 		parts = append(parts, rule.Name)
 	}
 	if rule.IncludeUsingGroup && usingGroup != "" {
 		parts = append(parts, usingGroup)
+	}
+	if endpointType != "" {
+		parts = append(parts, string(endpointType))
 	}
 	parts = append(parts, affinityValue)
 	return strings.Join(parts, ":")
@@ -408,7 +413,7 @@ func buildChannelAffinityKeyHint(s string) string {
 	return s[:4] + "..." + s[len(s)-4:]
 }
 
-func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup string) (int, bool) {
+func GetPreferredChannelByAffinity(c *gin.Context, modelName string, endpointType constant.EndpointType, usingGroup string) (int, bool) {
 	setting := operation_setting.GetChannelAffinitySetting()
 	if setting == nil || !setting.Enabled {
 		return 0, false
@@ -452,7 +457,7 @@ func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup 
 		if ttlSeconds <= 0 {
 			ttlSeconds = setting.DefaultTTLSeconds
 		}
-		cacheKeySuffix := buildChannelAffinityCacheKeySuffix(rule, usingGroup, affinityValue)
+		cacheKeySuffix := buildChannelAffinityCacheKeySuffix(rule, usingGroup, endpointType, affinityValue)
 		cacheKeyFull := channelAffinityCacheNamespace + ":" + cacheKeySuffix
 		setChannelAffinityContext(c, channelAffinityMeta{
 			CacheKey:       cacheKeyFull,
@@ -466,6 +471,7 @@ func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup 
 			KeyFingerprint: affinityFingerprint(affinityValue),
 			UsingGroup:     usingGroup,
 			ModelName:      modelName,
+			EndpointType:   endpointType,
 			RequestPath:    path,
 		})
 
@@ -513,6 +519,7 @@ func MarkChannelAffinityUsed(c *gin.Context, selectedGroup string, channelID int
 		"using_group":    meta.UsingGroup,
 		"selected_group": selectedGroup,
 		"model":          meta.ModelName,
+		"endpoint_type":  meta.EndpointType,
 		"request_path":   meta.RequestPath,
 		"channel_id":     channelID,
 		"key_source":     meta.KeySourceType,

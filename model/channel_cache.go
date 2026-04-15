@@ -14,8 +14,8 @@ import (
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 )
 
-var group2model2channels map[string]map[string][]int // enabled channel
-var channelsIDM map[int]*Channel                     // all channels include disabled
+var group2endpoint2model2channels map[string]map[constant.EndpointType]map[string][]int // enabled channel
+var channelsIDM map[int]*Channel                                                        // all channels include disabled
 var channelSyncLock sync.RWMutex
 
 func InitChannelCache() {
@@ -34,9 +34,9 @@ func InitChannelCache() {
 	for _, ability := range abilities {
 		groups[ability.Group] = true
 	}
-	newGroup2model2channels := make(map[string]map[string][]int)
+	newGroup2endpoint2model2channels := make(map[string]map[constant.EndpointType]map[string][]int)
 	for group := range groups {
-		newGroup2model2channels[group] = make(map[string][]int)
+		newGroup2endpoint2model2channels[group] = make(map[constant.EndpointType]map[string][]int)
 	}
 	for _, channel := range channels {
 		if channel.Status != common.ChannelStatusEnabled {
@@ -46,26 +46,33 @@ func InitChannelCache() {
 		for _, group := range groups {
 			models := strings.Split(channel.Models, ",")
 			for _, model := range models {
-				if _, ok := newGroup2model2channels[group][model]; !ok {
-					newGroup2model2channels[group][model] = make([]int, 0)
+				for _, endpointType := range common.GetEndpointTypesByChannelType(channel.Type, model) {
+					if _, ok := newGroup2endpoint2model2channels[group][endpointType]; !ok {
+						newGroup2endpoint2model2channels[group][endpointType] = make(map[string][]int)
+					}
+					if _, ok := newGroup2endpoint2model2channels[group][endpointType][model]; !ok {
+						newGroup2endpoint2model2channels[group][endpointType][model] = make([]int, 0)
+					}
+					newGroup2endpoint2model2channels[group][endpointType][model] = append(newGroup2endpoint2model2channels[group][endpointType][model], channel.Id)
 				}
-				newGroup2model2channels[group][model] = append(newGroup2model2channels[group][model], channel.Id)
 			}
 		}
 	}
 
 	// sort by priority
-	for group, model2channels := range newGroup2model2channels {
-		for model, channels := range model2channels {
-			sort.Slice(channels, func(i, j int) bool {
-				return newChannelId2channel[channels[i]].GetPriority() > newChannelId2channel[channels[j]].GetPriority()
-			})
-			newGroup2model2channels[group][model] = channels
+	for group, endpoint2model2channels := range newGroup2endpoint2model2channels {
+		for endpointType, model2channels := range endpoint2model2channels {
+			for model, channels := range model2channels {
+				sort.Slice(channels, func(i, j int) bool {
+					return newChannelId2channel[channels[i]].GetPriority() > newChannelId2channel[channels[j]].GetPriority()
+				})
+				newGroup2endpoint2model2channels[group][endpointType][model] = channels
+			}
 		}
 	}
 
 	channelSyncLock.Lock()
-	group2model2channels = newGroup2model2channels
+	group2endpoint2model2channels = newGroup2endpoint2model2channels
 	//channelsIDM = newChannelId2channel
 	for i, channel := range newChannelId2channel {
 		if channel.ChannelInfo.IsMultiKey {
@@ -93,23 +100,16 @@ func SyncChannelCache(frequency int) {
 	}
 }
 
-func GetRandomSatisfiedChannel(group string, model string, retry int) (*Channel, error) {
+func GetRandomSatisfiedChannel(group string, model string, endpointType constant.EndpointType, retry int) (*Channel, error) {
 	// if memory cache is disabled, get channel directly from database
 	if !common.MemoryCacheEnabled {
-		return GetChannel(group, model, retry)
+		return GetChannel(group, model, endpointType, retry)
 	}
 
 	channelSyncLock.RLock()
 	defer channelSyncLock.RUnlock()
 
-	// First, try to find channels with the exact model name.
-	channels := group2model2channels[group][model]
-
-	// If no channels found, try to find channels with the normalized model name.
-	if len(channels) == 0 {
-		normalizedModel := ratio_setting.FormatMatchingModelName(model)
-		channels = group2model2channels[group][normalizedModel]
-	}
+	channels := getChannelsByEndpointModelLocked(group, model, endpointType)
 
 	if len(channels) == 0 {
 		return nil, nil
@@ -232,14 +232,16 @@ func CacheUpdateChannelStatus(id int, status int) {
 		channel.Status = status
 	}
 	if status != common.ChannelStatusEnabled {
-		// delete the channel from group2model2channels
-		for group, model2channels := range group2model2channels {
-			for model, channels := range model2channels {
-				for i, channelId := range channels {
-					if channelId == id {
-						// remove the channel from the slice
-						group2model2channels[group][model] = append(channels[:i], channels[i+1:]...)
-						break
+		// delete the channel from group2endpoint2model2channels
+		for group, endpoint2model2channels := range group2endpoint2model2channels {
+			for endpointType, model2channels := range endpoint2model2channels {
+				for model, channels := range model2channels {
+					for i, channelId := range channels {
+						if channelId == id {
+							// remove the channel from the slice
+							group2endpoint2model2channels[group][endpointType][model] = append(channels[:i], channels[i+1:]...)
+							break
+						}
 					}
 				}
 			}
@@ -262,4 +264,25 @@ func CacheUpdateChannel(channel *Channel) {
 	println("before:", channelsIDM[channel.Id].ChannelInfo.MultiKeyPollingIndex)
 	channelsIDM[channel.Id] = channel
 	println("after :", channelsIDM[channel.Id].ChannelInfo.MultiKeyPollingIndex)
+}
+
+func getChannelsByEndpointModelLocked(group string, model string, endpointType constant.EndpointType) []int {
+	if endpointType == "" {
+		endpointType = constant.EndpointTypeOpenAI
+	}
+	if group2endpoint2model2channels == nil {
+		return nil
+	}
+	if endpointMap, ok := group2endpoint2model2channels[group]; ok {
+		if modelMap, ok := endpointMap[endpointType]; ok {
+			if channels := modelMap[model]; len(channels) > 0 {
+				return channels
+			}
+			normalizedModel := ratio_setting.FormatMatchingModelName(model)
+			if normalizedModel != "" && normalizedModel != model {
+				return modelMap[normalizedModel]
+			}
+		}
+	}
+	return nil
 }

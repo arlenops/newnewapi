@@ -23,8 +23,9 @@ import (
 )
 
 type ModelRequest struct {
-	Model string `json:"model"`
-	Group string `json:"group,omitempty"`
+	Model        string                `json:"model"`
+	Group        string                `json:"group,omitempty"`
+	EndpointType constant.EndpointType `json:"-"`
 }
 
 func Distribute() func(c *gin.Context) {
@@ -36,6 +37,7 @@ func Distribute() func(c *gin.Context) {
 			abortWithOpenAiMessage(c, http.StatusBadRequest, i18n.T(c, i18n.MsgDistributorInvalidRequest, map[string]any{"Error": err.Error()}))
 			return
 		}
+		common.SetContextKey(c, constant.ContextKeyRequestEndpointType, modelRequest.EndpointType)
 		if ok {
 			id, err := strconv.Atoi(channelId.(string))
 			if err != nil {
@@ -49,6 +51,14 @@ func Distribute() func(c *gin.Context) {
 			}
 			if channel.Status != common.ChannelStatusEnabled {
 				abortWithOpenAiMessage(c, http.StatusForbidden, i18n.T(c, i18n.MsgDistributorChannelDisabled))
+				return
+			}
+			if shouldSelectChannel && modelRequest.Model != "" && !common.IsEndpointTypeSupportedByChannel(channel.Type, modelRequest.Model, modelRequest.EndpointType) {
+				abortWithOpenAiMessage(c, http.StatusForbidden, i18n.T(c, i18n.MsgDistributorGetChannelFailed, map[string]any{
+					"Group": usingGroupForError(c),
+					"Model": modelRequest.Model,
+					"Error": fmt.Sprintf("channel does not support endpoint type %s", modelRequest.EndpointType),
+				}), types.ErrorCodeModelNotFound)
 				return
 			}
 		} else {
@@ -101,15 +111,15 @@ func Distribute() func(c *gin.Context) {
 					}
 				}
 
-				if preferredChannelID, found := service.GetPreferredChannelByAffinity(c, modelRequest.Model, usingGroup); found {
+				if preferredChannelID, found := service.GetPreferredChannelByAffinity(c, modelRequest.Model, modelRequest.EndpointType, usingGroup); found {
 					preferred, err := model.CacheGetChannel(preferredChannelID)
 					if err == nil && preferred != nil && preferred.Status == common.ChannelStatusEnabled {
-						if usingGroup == "auto" || common.GetContextKeyBool(c, constant.ContextKeyTokenCrossGroupRetry) {
+						if usingGroup == "auto" {
 							userGroup := common.GetContextKeyString(c, constant.ContextKeyUserGroup)
 							userId := common.GetContextKeyInt(c, constant.ContextKeyUserId)
 							retryGroups := service.GetUserEffectiveRetryGroups(userId, userGroup, usingGroup)
 							for _, g := range retryGroups {
-								if model.IsChannelEnabledForGroupModel(g, modelRequest.Model, preferred.Id) {
+								if model.IsChannelEnabledForGroupModel(g, modelRequest.Model, modelRequest.EndpointType, preferred.Id) {
 									selectGroup = g
 									common.SetContextKey(c, constant.ContextKeyAutoGroup, g)
 									channel = preferred
@@ -117,7 +127,7 @@ func Distribute() func(c *gin.Context) {
 									break
 								}
 							}
-						} else if model.IsChannelEnabledForGroupModel(usingGroup, modelRequest.Model, preferred.Id) {
+						} else if model.IsChannelEnabledForGroupModel(usingGroup, modelRequest.Model, modelRequest.EndpointType, preferred.Id) {
 							channel = preferred
 							selectGroup = usingGroup
 							service.MarkChannelAffinityUsed(c, usingGroup, preferred.Id)
@@ -127,10 +137,11 @@ func Distribute() func(c *gin.Context) {
 
 				if channel == nil {
 					channel, selectGroup, err = service.CacheGetRandomSatisfiedChannel(&service.RetryParam{
-						Ctx:        c,
-						ModelName:  modelRequest.Model,
-						TokenGroup: usingGroup,
-						Retry:      common.GetPointer(0),
+						Ctx:          c,
+						ModelName:    modelRequest.Model,
+						EndpointType: modelRequest.EndpointType,
+						TokenGroup:   usingGroup,
+						Retry:        common.GetPointer(0),
 					})
 					if err != nil {
 						showGroup := usingGroup
@@ -337,7 +348,16 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 	if strings.HasPrefix(c.Request.URL.Path, "/v1/responses/compact") && modelRequest.Model != "" {
 		modelRequest.Model = ratio_setting.WithCompactModelSuffix(modelRequest.Model)
 	}
+	modelRequest.EndpointType = common.GetRequestEndpointType(c.Request.URL.Path)
 	return &modelRequest, shouldSelectChannel, nil
+}
+
+func usingGroupForError(c *gin.Context) string {
+	usingGroup := common.GetContextKeyString(c, constant.ContextKeyUsingGroup)
+	if usingGroup != "" {
+		return usingGroup
+	}
+	return common.GetContextKeyString(c, constant.ContextKeyUserGroup)
 }
 
 func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, modelName string) *types.NewAPIError {

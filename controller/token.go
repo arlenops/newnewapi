@@ -183,6 +183,8 @@ func AddToken(c *gin.Context) {
 	crossGroupRetry := token.CrossGroupRetry
 	if token.Group == "auto" {
 		crossGroupRetry = true
+	} else {
+		crossGroupRetry = false
 	}
 
 	cleanToken := model.Token{
@@ -278,7 +280,7 @@ func UpdateToken(c *gin.Context) {
 		cleanToken.ModelLimits = token.ModelLimits
 		cleanToken.AllowIps = token.AllowIps
 		cleanToken.Group = token.Group
-		cleanToken.CrossGroupRetry = token.CrossGroupRetry
+		cleanToken.CrossGroupRetry = token.Group == "auto"
 	}
 	err = cleanToken.Update()
 	if err != nil {

@@ -226,33 +226,77 @@
   border-top: 1px dashed rgba(17, 17, 17, 0.16);
 }
 
-.token-premium-item__actions .semi-space {
-  row-gap: 8px !important;
-  column-gap: 8px !important;
+.token-premium-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.token-premium-item__actions .semi-button {
-  border-radius: 10px !important;
+.token-premium-action-stack__primary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
-.token-premium-shell .token-premium-online-btn.semi-button.semi-button-tertiary {
+.token-premium-action-stack__secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.token-premium-item__actions .semi-button,
+.token-premium-action-btn {
+  width: 100%;
+  min-height: 38px;
+  border-radius: 12px !important;
+  justify-content: center !important;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.token-premium-shell .token-premium-online-btn.semi-button.semi-button-primary {
   background: #111111 !important;
   border-color: #111111 !important;
   color: #ffffff !important;
+  box-shadow: 0 10px 18px -14px rgba(17, 17, 17, 0.6);
 }
 
 .token-premium-shell
-  .token-premium-online-btn.semi-button.semi-button-tertiary:hover {
+  .token-premium-online-btn.semi-button.semi-button-primary:hover {
   background: #000000 !important;
   border-color: #000000 !important;
   color: #ffffff !important;
 }
 
 .token-premium-shell
-  .token-premium-online-btn.semi-button.semi-button-tertiary:active {
+  .token-premium-online-btn.semi-button.semi-button-primary:active {
   background: #050505 !important;
   border-color: #050505 !important;
   color: #ffffff !important;
+}
+
+.token-premium-shell .token-premium-manage-btn.semi-button {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(17, 17, 17, 0.16) !important;
+  color: #171717 !important;
+}
+
+.token-premium-shell .token-premium-manage-btn.semi-button:hover {
+  border-color: rgba(17, 17, 17, 0.26) !important;
+  background: #ffffff !important;
+}
+
+.token-premium-shell .token-premium-delete-btn.semi-button {
+  border: 1px solid rgba(185, 28, 28, 0.18) !important;
+  background: rgba(255, 245, 245, 0.96) !important;
+  color: #b91c1c !important;
+}
+
+.token-premium-shell .token-premium-delete-btn.semi-button:hover {
+  border-color: rgba(185, 28, 28, 0.28) !important;
+  background: rgba(254, 242, 242, 1) !important;
+  color: #991b1b !important;
 }
 
 .token-premium-item--loading.semi-card {
@@ -301,6 +345,11 @@
 
   .token-premium-item__title {
     font-size: 15px;
+  }
+
+  .token-premium-action-stack__primary,
+  .token-premium-action-stack__secondary {
+    grid-template-columns: 1fr;
   }
 }
 

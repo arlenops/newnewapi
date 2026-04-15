@@ -69,13 +69,13 @@ export const useNavigation = (t, docsLink, headerNavModules, userState) => {
         requiresAuth: true,
       },
       {
-        text: t('令牌'),
+        text: t('开始'),
         itemKey: 'token',
         to: '/token',
         requiresAuth: true,
       },
       {
-        text: t('钱包'),
+        text: t('充值'),
         itemKey: 'wallet',
         to: '/wallet',
         requiresAuth: true,
@@ -93,14 +93,14 @@ export const useNavigation = (t, docsLink, headerNavModules, userState) => {
         requiresAuth: true,
       },
       {
-        text: t('模型'),
+        text: t('定价'),
         itemKey: 'pricing',
         to: '/pricing',
       },
       ...(docsLink
         ? [
             {
-              text: t('文档'),
+              text: t('教程'),
               itemKey: 'docs',
               isExternal: true,
               externalLink: docsLink,

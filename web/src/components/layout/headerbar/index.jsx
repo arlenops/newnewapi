@@ -60,6 +60,7 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
     handleNoticeOpen,
     handleNoticeClose,
     getUnreadKeys,
+    markAllRead,
   } = useNotifications(statusState);
 
   const { mainNavLinks } = useNavigation(
@@ -77,6 +78,7 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
         isMobile={isMobile}
         defaultTab={unreadCount > 0 ? 'system' : 'inApp'}
         unreadKeys={getUnreadKeys()}
+        onMarkAllRead={markAllRead}
       />
 
       <div className='w-full px-[14px] sm:px-5'>

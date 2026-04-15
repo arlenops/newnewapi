@@ -30,7 +30,6 @@ import {
   Typography,
   Input,
   Modal,
-  Dropdown,
 } from '@douyinfe/semi-ui';
 
 import {
@@ -43,7 +42,6 @@ import {
   IconCopy,
   IconEyeOpened,
   IconEyeClosed,
-  IconChevronDown,
 } from '@douyinfe/semi-icons';
 
 // progress color helper
@@ -305,29 +303,9 @@ const renderQuotaUsage = (text, record, t) => {
   );
 };
 
-const buildOnlineUseSettings = (apiKey) => ({
-  keyVaults: {
-    common: {
-      apiKey,
-    },
-  },
-});
-
-const buildCanvasUrl = (apiKey) => {
-  const url = new URL('https://open.oioiart.com/canvas');
-  url.searchParams.set(
-    'settings',
-    JSON.stringify(buildOnlineUseSettings(apiKey)),
-  );
-  return url.toString();
-};
-
 const buildArtUrl = (apiKey) => {
-  const url = new URL('https://image.oioiart.com/');
-  url.searchParams.set(
-    'settings',
-    JSON.stringify(buildOnlineUseSettings(apiKey)),
-  );
+  const url = new URL('https://www.oioiart.com/');
+  url.searchParams.set('key', apiKey);
   return url.toString();
 };
 
@@ -351,102 +329,96 @@ const renderOperations = (
   const apiKey = record.key.startsWith('sk-')
     ? record.key
     : `sk-${record.key}`;
-  const onlineUseOptions = [
-    {
-      node: 'item',
-      name: t('无限画布/beta'),
-      onClick: () => {
-        window.open(buildCanvasUrl(apiKey), '_blank');
-      },
-    },
-    {
-      node: 'item',
-      name: t('在线绘画/视频'),
-      onClick: () => {
-        window.open(buildArtUrl(apiKey), '_blank');
-      },
-    },
-    {
-      node: 'item',
-      name: t('在线对话/测试'),
-      onClick: () => {
-        window.open(buildPlaygroundUrl(apiKey), '_blank');
-      },
-    },
-  ];
 
   return (
-    <Space wrap>
-      <Dropdown
-        trigger='click'
-        position='bottomLeft'
-        menu={onlineUseOptions}
-      >
+    <div className='token-premium-action-stack'>
+      <div className='token-premium-action-stack__primary'>
         <Button
           size='small'
           type='primary'
-          theme='light'
-          iconPosition='right'
-          icon={<IconChevronDown size='small' />}
-          className='token-premium-online-btn'
+          theme='solid'
+          className='token-premium-online-btn token-premium-action-btn'
+          onClick={() => {
+            window.open(buildArtUrl(apiKey), '_blank');
+          }}
         >
-          {t('在线使用')}
+          {t('在线绘画/视频')}
         </Button>
-      </Dropdown>
 
-      {record.status === 1 ? (
+        <Button
+          size='small'
+          type='primary'
+          theme='solid'
+          className='token-premium-online-btn token-premium-action-btn'
+          onClick={() => {
+            window.open(buildPlaygroundUrl(apiKey), '_blank');
+          }}
+        >
+          {t('在线对话/测试')}
+        </Button>
+      </div>
+
+      <div className='token-premium-action-stack__secondary'>
+        <Button
+          type='tertiary'
+          size='small'
+          className='token-premium-action-btn token-premium-manage-btn'
+          onClick={() => {
+            setEditingToken(record);
+            setShowEdit(true);
+          }}
+        >
+          {t('编辑')}
+        </Button>
+
+        {record.status === 1 ? (
+          <Button
+            type='tertiary'
+            size='small'
+            className='token-premium-action-btn token-premium-manage-btn'
+            onClick={async () => {
+              await manageToken(record.id, 'disable', record);
+              await refresh();
+            }}
+          >
+            {t('禁用')}
+          </Button>
+        ) : (
+          <Button
+            type='tertiary'
+            size='small'
+            className='token-premium-action-btn token-premium-manage-btn'
+            onClick={async () => {
+              await manageToken(record.id, 'enable', record);
+              await refresh();
+            }}
+          >
+            {t('启用')}
+          </Button>
+        )}
+
         <Button
           type='danger'
+          theme='light'
           size='small'
-          onClick={async () => {
-            await manageToken(record.id, 'disable', record);
-            await refresh();
+          className='token-premium-action-btn token-premium-delete-btn'
+          onClick={() => {
+            Modal.confirm({
+              title: t('确定是否要删除此令牌？'),
+              content: t('此修改将不可逆'),
+              onOk: () => {
+                (async () => {
+                  await manageToken(record.id, 'delete', record);
+                  await refresh();
+                })();
+              },
+            });
           }}
         >
-          {t('禁用')}
+          {t('删除')}
         </Button>
-      ) : (
-        <Button
-          size='small'
-          onClick={async () => {
-            await manageToken(record.id, 'enable', record);
-            await refresh();
-          }}
-        >
-          {t('启用')}
-        </Button>
-      )}
-
-      <Button
-        type='tertiary'
-        size='small'
-        onClick={() => {
-          setEditingToken(record);
-          setShowEdit(true);
-        }}
-      >
-        {t('编辑')}
-      </Button>
-
-      <Button
-        type='danger'
-        size='small'
-        onClick={() => {
-          Modal.confirm({
-            title: t('确定是否要删除此令牌？'),
-            content: t('此修改将不可逆'),
-            onOk: () => {
-              (async () => {
-                await manageToken(record.id, 'delete', record);
-                await refresh();
-              })();
-            },
-          });
-        }}
-      >
-        {t('删除')}
-      </Button>
-    </Space>
+      </div>
+    </div>
   );
 };
 

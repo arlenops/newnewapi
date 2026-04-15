@@ -111,6 +111,7 @@ func init() {
 
 func ListModels(c *gin.Context, modelType int) {
 	userOpenAiModels := make([]dto.OpenAIModels, 0)
+	endpointType := getEndpointTypeByModelType(modelType)
 
 	acceptUnsetRatioModel := operation_setting.SelfUseModeEnabled
 	if !acceptUnsetRatioModel {
@@ -133,6 +134,9 @@ func ListModels(c *gin.Context, modelType int) {
 			tokenModelLimit = map[string]bool{}
 		}
 		for allowModel, _ := range tokenModelLimit {
+			if !modelSupportsEndpointType(allowModel, endpointType) {
+				continue
+			}
 			if !acceptUnsetRatioModel {
 				_, _, exist := ratio_setting.GetModelRatioOrPrice(allowModel)
 				if !exist {
@@ -164,14 +168,13 @@ func ListModels(c *gin.Context, modelType int) {
 		}
 		group := userGroup
 		tokenGroup := common.GetContextKeyString(c, constant.ContextKeyTokenGroup)
-		tokenCrossGroupRetry := common.GetContextKeyBool(c, constant.ContextKeyTokenCrossGroupRetry)
 		if tokenGroup != "" {
 			group = tokenGroup
 		}
 		var models []string
-		if tokenGroup == "auto" || (tokenGroup != "" && tokenCrossGroupRetry) {
+		if tokenGroup == "auto" {
 			for _, retryGroup := range service.GetUserEffectiveRetryGroups(userId, userGroup, tokenGroup) {
-				groupModels := model.GetGroupEnabledModels(retryGroup)
+				groupModels := model.GetGroupEnabledModelsByEndpointType(retryGroup, endpointType)
 				for _, g := range groupModels {
 					if !common.StringsContains(models, g) {
 						models = append(models, g)
@@ -179,7 +182,7 @@ func ListModels(c *gin.Context, modelType int) {
 				}
 			}
 		} else {
-			models = model.GetGroupEnabledModels(group)
+			models = model.GetGroupEnabledModelsByEndpointType(group, endpointType)
 		}
 		for _, modelName := range models {
 			if !acceptUnsetRatioModel {
@@ -264,7 +267,8 @@ func EnabledListModels(c *gin.Context) {
 
 func RetrieveModel(c *gin.Context, modelType int) {
 	modelId := c.Param("model")
-	if aiModel, ok := openAIModelsMap[modelId]; ok {
+	endpointType := getEndpointTypeByModelType(modelType)
+	if aiModel, ok := openAIModelsMap[modelId]; ok && modelSupportsEndpointType(modelId, endpointType) {
 		switch modelType {
 		case constant.ChannelTypeAnthropic:
 			c.JSON(200, dto.AnthropicModel{
@@ -287,4 +291,27 @@ func RetrieveModel(c *gin.Context, modelType int) {
 			"error": openAIError,
 		})
 	}
+}
+
+func getEndpointTypeByModelType(modelType int) constant.EndpointType {
+	switch modelType {
+	case constant.ChannelTypeAnthropic:
+		return constant.EndpointTypeAnthropic
+	case constant.ChannelTypeGemini:
+		return constant.EndpointTypeGemini
+	default:
+		return constant.EndpointTypeOpenAI
+	}
+}
+
+func modelSupportsEndpointType(modelName string, endpointType constant.EndpointType) bool {
+	if endpointType == "" {
+		return true
+	}
+	for _, supported := range model.GetModelSupportEndpointTypes(modelName) {
+		if supported == endpointType {
+			return true
+		}
+	}
+	return false
 }

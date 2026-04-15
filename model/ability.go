@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/constant"
 
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -42,6 +43,36 @@ func GetGroupEnabledModels(group string) []string {
 	var models []string
 	// Find distinct models
 	DB.Table("abilities").Where(commonGroupCol+" = ? and enabled = ?", group, true).Distinct("model").Pluck("model", &models)
+	return models
+}
+
+func GetGroupEnabledModelsByEndpointType(group string, endpointType constant.EndpointType) []string {
+	if endpointType == "" {
+		return GetGroupEnabledModels(group)
+	}
+
+	var abilities []AbilityWithChannel
+	err := DB.Table("abilities").
+		Select("abilities.*, channels.type as channel_type").
+		Joins("left join channels on abilities.channel_id = channels.id").
+		Where(commonGroupCol+" = ? and abilities.enabled = ?", group, true).
+		Scan(&abilities).Error
+	if err != nil {
+		return []string{}
+	}
+
+	modelSet := make(map[string]struct{})
+	models := make([]string, 0)
+	for _, ability := range abilities {
+		if !common.IsEndpointTypeSupportedByChannel(ability.ChannelType, ability.Model, endpointType) {
+			continue
+		}
+		if _, ok := modelSet[ability.Model]; ok {
+			continue
+		}
+		modelSet[ability.Model] = struct{}{}
+		models = append(models, ability.Model)
+	}
 	return models
 }
 
@@ -90,21 +121,21 @@ func getPriority(group string, model string, retry int) (int, error) {
 
 func getChannelQuery(group string, model string, retry int) (*gorm.DB, error) {
 	maxPrioritySubQuery := DB.Model(&Ability{}).Select("MAX(priority)").Where(commonGroupCol+" = ? and model = ? and enabled = ?", group, model, true)
-	channelQuery := DB.Where(commonGroupCol+" = ? and model = ? and enabled = ? and priority = (?)", group, model, true, maxPrioritySubQuery)
+	channelQuery := DB.Model(&Ability{}).Where(commonGroupCol+" = ? and model = ? and enabled = ? and priority = (?)", group, model, true, maxPrioritySubQuery)
 	if retry != 0 {
 		priority, err := getPriority(group, model, retry)
 		if err != nil {
 			return nil, err
 		} else {
-			channelQuery = DB.Where(commonGroupCol+" = ? and model = ? and enabled = ? and priority = ?", group, model, true, priority)
+			channelQuery = DB.Model(&Ability{}).Where(commonGroupCol+" = ? and model = ? and enabled = ? and priority = ?", group, model, true, priority)
 		}
 	}
 
 	return channelQuery, nil
 }
 
-func GetChannel(group string, model string, retry int) (*Channel, error) {
-	var abilities []Ability
+func GetChannel(group string, model string, endpointType constant.EndpointType, retry int) (*Channel, error) {
+	var abilities []AbilityWithChannel
 
 	var err error = nil
 	channelQuery, err := getChannelQuery(group, model, retry)
@@ -112,23 +143,42 @@ func GetChannel(group string, model string, retry int) (*Channel, error) {
 		return nil, err
 	}
 	if common.UsingSQLite || common.UsingPostgreSQL {
-		err = channelQuery.Order("weight DESC").Find(&abilities).Error
+		err = channelQuery.
+			Select("abilities.*, channels.type as channel_type").
+			Joins("left join channels on abilities.channel_id = channels.id").
+			Order("weight DESC").
+			Find(&abilities).Error
 	} else {
-		err = channelQuery.Order("weight DESC").Find(&abilities).Error
+		err = channelQuery.
+			Select("abilities.*, channels.type as channel_type").
+			Joins("left join channels on abilities.channel_id = channels.id").
+			Order("weight DESC").
+			Find(&abilities).Error
 	}
 	if err != nil {
 		return nil, err
 	}
+
+	if endpointType == "" {
+		endpointType = constant.EndpointTypeOpenAI
+	}
+	filteredAbilities := make([]AbilityWithChannel, 0, len(abilities))
+	for _, ability := range abilities {
+		if common.IsEndpointTypeSupportedByChannel(ability.ChannelType, ability.Model, endpointType) {
+			filteredAbilities = append(filteredAbilities, ability)
+		}
+	}
+
 	channel := Channel{}
-	if len(abilities) > 0 {
+	if len(filteredAbilities) > 0 {
 		// Randomly choose one
 		weightSum := uint(0)
-		for _, ability_ := range abilities {
+		for _, ability_ := range filteredAbilities {
 			weightSum += ability_.Weight + 10
 		}
 		// Randomly choose one
 		weight := common.GetRandomInt(int(weightSum))
-		for _, ability_ := range abilities {
+		for _, ability_ := range filteredAbilities {
 			weight -= int(ability_.Weight) + 10
 			//log.Printf("weight: %d, ability weight: %d", weight, *ability_.Weight)
 			if weight <= 0 {

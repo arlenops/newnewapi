@@ -1,6 +1,11 @@
 package common
 
-import "github.com/QuantumNous/new-api/constant"
+import (
+	"strings"
+
+	"github.com/QuantumNous/new-api/constant"
+	relayconstant "github.com/QuantumNous/new-api/relay/constant"
+)
 
 // GetEndpointTypesByChannelType 获取渠道最优先端点类型（所有的渠道都支持 OpenAI 端点）
 func GetEndpointTypesByChannelType(channelType int, modelName string) []constant.EndpointType {
@@ -42,4 +47,44 @@ func GetEndpointTypesByChannelType(channelType int, modelName string) []constant
 		endpointTypes = append([]constant.EndpointType{constant.EndpointTypeImageGeneration}, endpointTypes...)
 	}
 	return endpointTypes
+}
+
+func IsEndpointTypeSupportedByChannel(channelType int, modelName string, endpointType constant.EndpointType) bool {
+	if endpointType == "" {
+		return true
+	}
+	for _, supported := range GetEndpointTypesByChannelType(channelType, modelName) {
+		if supported == endpointType {
+			return true
+		}
+	}
+	return false
+}
+
+func GetRequestEndpointType(path string) constant.EndpointType {
+	if strings.HasPrefix(path, "/v1/messages") {
+		return constant.EndpointTypeAnthropic
+	}
+
+	switch relayconstant.Path2RelayMode(path) {
+	case relayconstant.RelayModeEmbeddings:
+		return constant.EndpointTypeEmbeddings
+	case relayconstant.RelayModeImagesGenerations, relayconstant.RelayModeImagesEdits:
+		return constant.EndpointTypeImageGeneration
+	case relayconstant.RelayModeRerank:
+		return constant.EndpointTypeJinaRerank
+	case relayconstant.RelayModeResponses:
+		return constant.EndpointTypeOpenAIResponse
+	case relayconstant.RelayModeResponsesCompact:
+		return constant.EndpointTypeOpenAIResponseCompact
+	case relayconstant.RelayModeGemini:
+		if strings.Contains(path, ":embedContent") || strings.Contains(path, ":batchEmbedContents") {
+			return constant.EndpointTypeEmbeddings
+		}
+		return constant.EndpointTypeGemini
+	case relayconstant.RelayModeVideoFetchByID, relayconstant.RelayModeVideoSubmit:
+		return constant.EndpointTypeOpenAIVideo
+	default:
+		return constant.EndpointTypeOpenAI
+	}
 }

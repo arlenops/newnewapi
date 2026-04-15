@@ -176,11 +176,16 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 		}
 	}()
 
+	requestEndpointType, ok := common.GetContextKeyType[constant.EndpointType](c, constant.ContextKeyRequestEndpointType)
+	if !ok {
+		requestEndpointType = common.GetRequestEndpointType(c.Request.URL.Path)
+	}
 	retryParam := &service.RetryParam{
-		Ctx:        c,
-		TokenGroup: relayInfo.TokenGroup,
-		ModelName:  relayInfo.OriginModelName,
-		Retry:      common.GetPointer(0),
+		Ctx:          c,
+		TokenGroup:   relayInfo.TokenGroup,
+		ModelName:    relayInfo.OriginModelName,
+		EndpointType: requestEndpointType,
+		Retry:        common.GetPointer(0),
 	}
 
 	for ; retryParam.GetRetry() <= common.RetryTimes; retryParam.IncreaseRetry() {
