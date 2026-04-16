@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/QuantumNous/new-api/controller"
 	"github.com/QuantumNous/new-api/middleware"
+	"github.com/QuantumNous/new-api/setting"
 
 	// Import oauth package to register providers via init()
 	_ "github.com/QuantumNous/new-api/oauth"
@@ -12,6 +13,10 @@ import (
 )
 
 func SetApiRouter(router *gin.Engine) {
+	stripeEnabled := setting.StripeApiSecret != "" &&
+		setting.StripeWebhookSecret != "" &&
+		setting.StripePriceId != ""
+
 	apiRouter := router.Group("/api")
 	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
 	apiRouter.Use(middleware.BodyStorageCleanup()) // 清理请求体存储
@@ -45,7 +50,9 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/oauth/:provider", middleware.CriticalRateLimit(), controller.HandleOAuth)
 		apiRouter.GET("/ratio_config", middleware.CriticalRateLimit(), controller.GetRatioConfig)
 
-		apiRouter.POST("/stripe/webhook", controller.StripeWebhook)
+		if stripeEnabled {
+			apiRouter.POST("/stripe/webhook", controller.StripeWebhook)
+		}
 		apiRouter.POST("/creem/webhook", controller.CreemWebhook)
 
 		// Universal secure verification routes
@@ -85,8 +92,10 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.POST("/topup", middleware.CriticalRateLimit(), controller.TopUp)
 				selfRoute.POST("/pay", middleware.CriticalRateLimit(), controller.RequestEpay)
 				selfRoute.POST("/amount", controller.RequestAmount)
-				selfRoute.POST("/stripe/pay", middleware.CriticalRateLimit(), controller.RequestStripePay)
-				selfRoute.POST("/stripe/amount", controller.RequestStripeAmount)
+				if stripeEnabled {
+					selfRoute.POST("/stripe/pay", middleware.CriticalRateLimit(), controller.RequestStripePay)
+					selfRoute.POST("/stripe/amount", controller.RequestStripeAmount)
+				}
 				selfRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.RequestCreemPay)
 				selfRoute.POST("/aff_transfer", controller.TransferAffQuota)
 				selfRoute.GET("/invitees/topup", controller.GetInviteeEpayTopUpSummary)
@@ -142,7 +151,9 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionRoute.GET("/self", controller.GetSubscriptionSelf)
 			subscriptionRoute.PUT("/self/preference", controller.UpdateSubscriptionPreference)
 			subscriptionRoute.POST("/epay/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestEpay)
-			subscriptionRoute.POST("/stripe/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestStripePay)
+			if stripeEnabled {
+				subscriptionRoute.POST("/stripe/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestStripePay)
+			}
 			subscriptionRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestCreemPay)
 		}
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")
