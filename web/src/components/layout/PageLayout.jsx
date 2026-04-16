@@ -22,7 +22,7 @@ import { Layout } from '@douyinfe/semi-ui';
 import SiderBar from './SiderBar';
 import App from '../../App';
 import { ToastContainer } from 'react-toastify';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import { useSidebarCollapsed } from '../../hooks/common/useSidebarCollapsed';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +44,7 @@ const PageLayout = () => {
   const isMobile = useIsMobile();
   const [collapsed, , setCollapsed] = useSidebarCollapsed();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const contentRef = useRef(null);
   const { i18n } = useTranslation();
   const location = useLocation();
 
@@ -60,6 +61,15 @@ const PageLayout = () => {
       setCollapsed(false);
     }
   }, [isMobile, drawerOpen, collapsed, setCollapsed]);
+
+  useLayoutEffect(() => {
+    // Reset scroll when route changes so leaving the long home page
+    // does not keep the next page at an old scroll position.
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const loadUser = () => {
     let user = localStorage.getItem('user');
@@ -177,6 +187,7 @@ const PageLayout = () => {
           }}
         >
           <Content
+            ref={contentRef}
             className='app-main-content'
             style={{
               flex: '1 1 auto',

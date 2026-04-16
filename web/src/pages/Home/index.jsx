@@ -51,6 +51,7 @@ const Home = () => {
   const isMobile = useIsMobile();
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
   const docsLink = statusState?.status?.docs_link || '';
+  const announcements = statusState?.status?.announcements || [];
   const serverAddress =
     statusState?.status?.server_address || `${window.location.origin}`;
   const endpointItems = API_ENDPOINTS.map((e) => ({ value: e }));
@@ -108,6 +109,12 @@ const Home = () => {
 
   useEffect(() => {
     const checkNoticeAndShow = async () => {
+      // When system announcements exist, let users open them explicitly
+      // from the header instead of blocking the homepage on first load.
+      if (announcements.length > 0) {
+        return;
+      }
+
       const lastCloseDate = localStorage.getItem('notice_close_date');
       const today = new Date().toDateString();
       if (lastCloseDate !== today) {
@@ -124,7 +131,7 @@ const Home = () => {
     };
 
     checkNoticeAndShow();
-  }, []);
+  }, [announcements]);
 
   useEffect(() => {
     displayHomePageContent().then();
@@ -304,7 +311,7 @@ const Home = () => {
                 </div>
 
                 <div className='home-premium__actions home-reveal' style={{ '--delay': '260ms' }}>
-                  <Link to='/token'>
+                  <Link to='/token' reloadDocument>
                     <Button
                       theme='solid'
                       type='primary'

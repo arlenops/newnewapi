@@ -32,6 +32,7 @@ const Navigation = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const shouldReloadDocument = location.pathname === '/';
 
   const resolveTargetPath = (item, parentItem = null) => {
     const requiresAuth =
@@ -149,6 +150,10 @@ const Navigation = ({
                       key={child.itemKey || child.to || child.text}
                       onClick={() => {
                         if (childTargetPath) {
+                          if (shouldReloadDocument) {
+                            window.location.assign(childTargetPath);
+                            return;
+                          }
                           navigate(childTargetPath);
                         }
                       }}
@@ -177,6 +182,7 @@ const Navigation = ({
         <Link
           key={link.itemKey}
           to={targetPath}
+          reloadDocument={shouldReloadDocument}
           className={linkClasses}
           style={linkStyle}
         >

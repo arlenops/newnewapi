@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Avatar, Button, Dropdown, Typography } from '@douyinfe/semi-ui';
 import { ChevronDown } from 'lucide-react';
 import {
@@ -40,6 +40,8 @@ const UserArea = ({
   t,
 }) => {
   const dropdownRef = useRef(null);
+  const location = useLocation();
+  const shouldReloadDocument = location.pathname === '/';
   if (isLoading) {
     return (
       <SkeletonWrapper
@@ -175,7 +177,7 @@ const UserArea = ({
 
     return (
       <div className='flex items-center'>
-        <Link to='/login' className='flex'>
+        <Link to='/login' className='flex' reloadDocument={shouldReloadDocument}>
           <Button
             theme='borderless'
             type='tertiary'
@@ -186,7 +188,11 @@ const UserArea = ({
         </Link>
         {showRegisterButton && (
           <div className='hidden md:block'>
-            <Link to='/register' className='flex -ml-px'>
+            <Link
+              to='/register'
+              className='flex -ml-px'
+              reloadDocument={shouldReloadDocument}
+            >
               <Button
                 theme='solid'
                 type='primary'

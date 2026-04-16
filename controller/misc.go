@@ -167,11 +167,25 @@ func GetStatus(c *gin.Context) {
 
 func GetNotice(c *gin.Context) {
 	common.OptionMapRWMutex.RLock()
-	defer common.OptionMapRWMutex.RUnlock()
+	notice := common.OptionMap["Notice"]
+	common.OptionMapRWMutex.RUnlock()
+
+	if strings.TrimSpace(notice) == "" && console_setting.GetConsoleSetting().AnnouncementsEnabled {
+		announcements := console_setting.GetAnnouncements()
+		if len(announcements) > 0 {
+			if content, ok := announcements[0]["content"].(string); ok {
+				notice = content
+				if extra, ok := announcements[0]["extra"].(string); ok && strings.TrimSpace(extra) != "" {
+					notice = strings.TrimSpace(content + "\n\n" + extra)
+				}
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    common.OptionMap["Notice"],
+		"data":    notice,
 	})
 	return
 }
