@@ -28,7 +28,8 @@ import {
   Tag,
 } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
-import { API, showError, getRelativeTime } from '../../helpers';
+import { showError, getRelativeTime } from '../../helpers';
+import { fetchNoticeContent } from '../../helpers/notice';
 import { marked } from 'marked';
 import {
   IllustrationNoContent,
@@ -200,18 +201,19 @@ const NoticeModal = ({
     onClose();
   };
 
-  const displayNotice = async () => {
+  const displayNotice = async ({ force = false, silent = false } = {}) => {
     setLoading(true);
     try {
-      const res = await API.get('/api/notice');
-      const { success, message, data } = res.data;
+      const { success, message, data } = await fetchNoticeContent({ force });
       if (success) {
         setNoticeContent(data ? marked.parse(data) : '');
-      } else {
+      } else if (!silent) {
         showError(message);
       }
     } catch (error) {
-      showError(error.message);
+      if (!silent) {
+        showError(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -219,7 +221,7 @@ const NoticeModal = ({
 
   useEffect(() => {
     if (visible) {
-      displayNotice();
+      displayNotice({ silent: true });
     }
   }, [visible]);
 
@@ -339,13 +341,13 @@ const NoticeModal = ({
         footer={
           <div className='notice-sheet__footer'>
             <Button
-              theme='borderless'
-              type='tertiary'
-              icon={<RefreshCw size={15} />}
-              onClick={displayNotice}
-            >
-              {t('刷新')}
-            </Button>
+            theme='borderless'
+            type='tertiary'
+            icon={<RefreshCw size={15} />}
+            onClick={() => displayNotice({ force: true })}
+          >
+            {t('刷新')}
+          </Button>
             <div className='notice-sheet__footer-actions'>
               <Button theme='light' type='tertiary' onClick={handleCloseTodayNotice}>
                 {t('今日关闭')}

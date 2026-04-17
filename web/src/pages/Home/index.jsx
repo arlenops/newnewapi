@@ -25,6 +25,7 @@ import {
   ScrollItem,
 } from '@douyinfe/semi-ui';
 import { API, showError, copy, showSuccess } from '../../helpers';
+import { fetchNoticeContent } from '../../helpers/notice';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import { API_ENDPOINTS } from '../../constants/common.constant';
 import { StatusContext } from '../../context/Status';
@@ -119,14 +120,11 @@ const Home = () => {
       const today = new Date().toDateString();
       if (lastCloseDate !== today) {
         try {
-          const res = await API.get('/api/notice');
-          const { success, data } = res.data;
+          const { success, data } = await fetchNoticeContent();
           if (success && data && data.trim() !== '') {
             setNoticeVisible(true);
           }
-        } catch (error) {
-          console.error('获取公告失败:', error);
-        }
+        } catch (_) {}
       }
     };
 

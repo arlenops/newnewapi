@@ -145,6 +145,18 @@ export const getModelCategories = (() => {
         icon: null,
         filter: () => true,
       },
+      gpt: {
+        label: 'GPT',
+        icon: <OpenAI />,
+        filter: (model) => {
+          const modelName = model.model_name.toLowerCase();
+          return (
+            modelName.includes('gpt-image-1') ||
+            modelName.includes('gpt-image-1.5') ||
+            modelName.includes('sora-image')
+          );
+        },
+      },
       openai: {
         label: 'OpenAI',
         icon: <OpenAI />,

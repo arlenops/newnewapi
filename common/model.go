@@ -13,9 +13,16 @@ var (
 		"dall-e-3",
 		"dall-e-2",
 		"gpt-image-1",
+		"gpt-image-1.5",
+		"sora-image",
 		"prefix:imagen-",
 		"flux-",
 		"flux.1-",
+	}
+	ChatFormatImageModels = []string{
+		"gpt-image-1",
+		"gpt-image-1.5",
+		"sora-image",
 	}
 	OpenAITextModels = []string{
 		"gpt-",
@@ -23,6 +30,7 @@ var (
 		"o3",
 		"o4",
 		"chatgpt",
+		"sora-image",
 	}
 )
 
@@ -42,6 +50,16 @@ func IsImageGenerationModel(modelName string) bool {
 			return true
 		}
 		if strings.HasPrefix(m, "prefix:") && strings.HasPrefix(modelName, strings.TrimPrefix(m, "prefix:")) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsChatFormatImageModel(modelName string) bool {
+	modelName = strings.ToLower(modelName)
+	for _, m := range ChatFormatImageModels {
+		if strings.Contains(modelName, m) {
 			return true
 		}
 	}
