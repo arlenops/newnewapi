@@ -210,10 +210,11 @@ func Register(c *gin.Context) {
 			RemainQuota:        500000, // 示例额度
 			UnlimitedQuota:     true,
 			ModelLimitsEnabled: false,
-			CrossGroupRetry:    true,
+			CrossGroupRetry:    false,
 		}
 		if setting.DefaultUseAutoGroup {
 			token.Group = "auto"
+			token.CrossGroupRetry = true
 		}
 		if err := token.Insert(); err != nil {
 			common.ApiErrorI18n(c, i18n.MsgCreateDefaultTokenErr)

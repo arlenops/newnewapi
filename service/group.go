@@ -130,34 +130,23 @@ func GetUserEffectiveAutoGroup(userId int, userGroup string) []string {
 	return autoGroups
 }
 
-// GetUserEffectiveRetryGroups returns the preferred group first, then falls
-// back to the user's effective auto-routing groups.
+// GetUserEffectiveRetryGroups returns the actual retry group list.
+// Only the "auto" group is allowed to expand into multiple routing groups.
+// Explicitly specified groups must stay pinned to that group.
 func GetUserEffectiveRetryGroups(userId int, userGroup, preferredGroup string) []string {
 	if strings.TrimSpace(preferredGroup) == "" || preferredGroup == "auto" {
 		return GetUserEffectiveAutoGroup(userId, userGroup)
 	}
 	groups := GetUserEffectiveGroups(userId, userGroup)
-	retryGroups := make([]string, 0)
-	seen := make(map[string]struct{})
-	appendGroup := func(group string) {
-		group = strings.TrimSpace(group)
-		if group == "" || group == "auto" {
-			return
-		}
-		if _, ok := groups[group]; !ok {
-			return
-		}
-		if _, ok := seen[group]; ok {
-			return
-		}
-		seen[group] = struct{}{}
-		retryGroups = append(retryGroups, group)
+
+	preferredGroup = strings.TrimSpace(preferredGroup)
+	if preferredGroup == "" || preferredGroup == "auto" {
+		return []string{}
 	}
-	appendGroup(preferredGroup)
-	for _, group := range GetUserEffectiveAutoGroup(userId, userGroup) {
-		appendGroup(group)
+	if _, ok := groups[preferredGroup]; !ok {
+		return []string{}
 	}
-	return retryGroups
+	return []string{preferredGroup}
 }
 
 // GetUserGroupRatio 获取用户使用某个分组的倍率
