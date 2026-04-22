@@ -152,6 +152,7 @@ export const getModelCategories = (() => {
           const modelName = model.model_name.toLowerCase();
           return (
             modelName.includes('gpt-image-1') ||
+            modelName.includes('gpt-image-2') ||
             modelName.includes('gpt-image-1.5') ||
             modelName.includes('sora-image')
           );
