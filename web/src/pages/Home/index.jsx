@@ -17,29 +17,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  Input,
-  ScrollList,
-  ScrollItem,
-} from '@douyinfe/semi-ui';
-import { API, showError, copy, showSuccess } from '../../helpers';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@douyinfe/semi-ui';
+import { API, showError } from '../../helpers';
 import { fetchNoticeContent } from '../../helpers/notice';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
-import { API_ENDPOINTS } from '../../constants/common.constant';
 import { StatusContext } from '../../context/Status';
 import { useActualTheme } from '../../context/Theme';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 import {
+  IconBookOpenStroked,
   IconGithubLogo,
-  IconPlay,
-  IconFile,
+  IconSend,
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
-import { createHomeReviewBarrageRows } from './barragePrompts';
 import './home.css';
 
 const Home = () => {
@@ -49,14 +42,11 @@ const Home = () => {
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
   const [noticeVisible, setNoticeVisible] = useState(false);
+  const rainbowCanvasRef = useRef(null);
   const isMobile = useIsMobile();
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
   const docsLink = statusState?.status?.docs_link || '';
   const announcements = statusState?.status?.announcements || [];
-  const serverAddress =
-    statusState?.status?.server_address || `${window.location.origin}`;
-  const endpointItems = API_ENDPOINTS.map((e) => ({ value: e }));
-  const [endpointIndex, setEndpointIndex] = useState(0);
   const isChinese = i18n.language.startsWith('zh');
   const heroTitlePrefix =
     statusState?.status?.home_hero_title_prefix || t('统一的');
@@ -67,10 +57,16 @@ const Home = () => {
     t('更好的价格，更好的稳定性，只需要将模型基址替换为：');
   const [typedHeroTitleMain, setTypedHeroTitleMain] = useState(heroTitleMain);
   const [isHeroTitleTyping, setIsHeroTitleTyping] = useState(false);
-  const reviewBarrageRows = useMemo(
-    () => createHomeReviewBarrageRows({ rowCount: 2, sampleSize: 24 }),
-    [],
-  );
+  const typewriterTexts = useMemo(() => {
+    const mainText = [heroTitlePrefix, heroTitleMain]
+      .map((text) => (text || '').trim())
+      .filter(Boolean)
+      .join(isChinese ? '' : ' ');
+    const normalize = (text) => text.replace(/\s+/g, '').toLowerCase();
+    return [heroTitleSub, mainText]
+      .map((text) => (text || '').trim())
+      .filter((text) => text && normalize(text) !== 'oioiart');
+  }, [heroTitlePrefix, heroTitleMain, heroTitleSub, isChinese]);
 
   const displayHomePageContent = async () => {
     setHomePageContent(localStorage.getItem('home_page_content') || '');
@@ -101,13 +97,6 @@ const Home = () => {
     setHomePageContentLoaded(true);
   };
 
-  const handleCopyBaseURL = async () => {
-    const ok = await copy(serverAddress);
-    if (ok) {
-      showSuccess(t('已复制到剪切板'));
-    }
-  };
-
   useEffect(() => {
     const checkNoticeAndShow = async () => {
       // When system announcements exist, let users open them explicitly
@@ -136,20 +125,10 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setEndpointIndex((prev) => (prev + 1) % endpointItems.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [endpointItems.length]);
-
-  useEffect(() => {
-    const rawTexts = [heroTitleMain, heroTitleSub]
-      .map((text) => (text || '').trim())
-      .filter(Boolean);
     const loopTexts =
-      rawTexts.length > 1 && rawTexts[0] === rawTexts[1]
-        ? [rawTexts[0]]
-        : rawTexts;
+      typewriterTexts.length > 1 && typewriterTexts[0] === typewriterTexts[1]
+        ? [typewriterTexts[0]]
+        : typewriterTexts;
     const primaryText = loopTexts[0] || '';
 
     const shouldReduceMotion =
@@ -245,7 +224,185 @@ const Home = () => {
       stopped = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [heroTitleMain, heroTitleSub]);
+  }, [typewriterTexts]);
+
+  useEffect(() => {
+    if (!homePageContentLoaded || homePageContent !== '') return;
+
+    const canvas = rainbowCanvasRef.current;
+    if (!canvas) return;
+
+    const shouldReduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (shouldReduceMotion) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let hue = 0;
+    let frameId = 0;
+    const trail = [];
+    const particles = [];
+    const maxTrailLength = 60;
+
+    const getCanvasPoint = (clientX, clientY) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+      };
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      width = Math.max(rect.width, window.innerWidth || 1);
+      height = Math.max(rect.height, window.innerHeight || 1);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (mouseX === 0 && mouseY === 0) {
+        mouseX = width / 2;
+        mouseY = height / 2;
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+      }
+    };
+
+    class Particle {
+      constructor(x, y, particleHue) {
+        this.x = x + (Math.random() - 0.5) * 10;
+        this.y = y + (Math.random() - 0.5) * 10;
+        this.vx = (Math.random() - 0.5) * 8;
+        this.vy = (Math.random() - 0.5) * 8;
+        this.size = Math.random() * 4 + 1.5;
+        this.hue = particleHue + (Math.random() - 0.5) * 50;
+        this.life = 1;
+        this.decay = Math.random() * 0.03 + 0.015;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+        this.size *= 0.92;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, Math.max(0, this.size), 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 100%, 65%, ${this.life})`;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = `hsla(${this.hue}, 100%, 65%, ${this.life})`;
+        ctx.fill();
+      }
+    }
+
+    const drawTrail = () => {
+      if (trail.length <= 1) return;
+
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      for (let i = 1; i < trail.length; i += 1) {
+        const pt1 = trail[i - 1];
+        const pt2 = trail[i];
+        const progress = i / trail.length;
+        const currentHue = (hue + i * 2) % 360;
+
+        ctx.beginPath();
+        ctx.lineWidth = 18 * progress;
+        ctx.strokeStyle = `hsla(${currentHue}, 100%, 55%, ${progress})`;
+        ctx.shadowBlur = 15 * progress;
+        ctx.shadowColor = `hsla(${currentHue}, 100%, 55%, ${progress})`;
+        ctx.moveTo(pt1.x, pt1.y);
+        ctx.lineTo(pt2.x, pt2.y);
+        ctx.stroke();
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+      ctx.shadowBlur = 0;
+
+      trail.push({ x: mouseX, y: mouseY });
+      if (trail.length > maxTrailLength) {
+        trail.shift();
+      }
+
+      hue = (hue + 3) % 360;
+
+      const dx = mouseX - lastMouseX;
+      const dy = mouseY - lastMouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 1 || Math.random() > 0.85) {
+        const particleCount = Math.min(Math.floor(distance / 2) + 2, 10);
+        for (let i = 0; i < particleCount; i += 1) {
+          particles.push(new Particle(mouseX, mouseY, hue));
+        }
+      }
+
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+      drawTrail();
+
+      for (let i = particles.length - 1; i >= 0; i -= 1) {
+        particles[i].update();
+        if (particles[i].life <= 0 || particles[i].size <= 0.1) {
+          particles.splice(i, 1);
+        } else {
+          particles[i].draw();
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(mouseX, mouseY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${(hue + trail.length * 2) % 360}, 100%, 70%, 0.8)`;
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = `hsla(${(hue + trail.length * 2) % 360}, 100%, 60%, 1)`;
+      ctx.fill();
+
+      frameId = requestAnimationFrame(animate);
+    };
+
+    const handleMouseMove = (event) => {
+      const point = getCanvasPoint(event.clientX, event.clientY);
+      mouseX = point.x;
+      mouseY = point.y;
+    };
+
+    const handleTouchMove = (event) => {
+      if (!event.touches.length) return;
+      const point = getCanvasPoint(
+        event.touches[0].clientX,
+        event.touches[0].clientY,
+      );
+      mouseX = point.x;
+      mouseY = point.y;
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    frameId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [homePageContentLoaded, homePageContent]);
 
   return (
     <div className='w-full overflow-x-hidden home-page-root'>
@@ -256,68 +413,46 @@ const Home = () => {
       />
       {homePageContentLoaded && homePageContent === '' ? (
         <div className='home-premium'>
-          <div className='home-premium__orb home-premium__orb--left' />
-          <div className='home-premium__orb home-premium__orb--right' />
+          <canvas
+            ref={rainbowCanvasRef}
+            className='home-rainbow-canvas'
+            aria-hidden='true'
+          />
           <div className='home-premium__grain' />
 
           <div className='home-premium__container'>
             <section className='home-premium__stage'>
               <div className='home-premium__hero home-reveal' style={{ '--delay': '90ms' }}>
-                <h1
-                  className={`home-premium__title ${isChinese ? 'home-premium__title--cn' : ''}`}
+                <div className='home-premium__title-wrap'>
+                  <h1 className='home-premium__title noise-text'>
+                    OiOi ART
+                  </h1>
+                  <span className='home-premium__handwriting'>
+                    Your eyes, your rules
+                  </span>
+                </div>
+
+                <p
+                  className={`home-premium__typewriter ${isChinese ? 'home-premium__typewriter--cn' : ''}`}
                 >
-                  <span>{heroTitlePrefix}</span>
-                  <strong
-                    className='home-premium__title-main'
+                  <span
+                    className='home-premium__typed-text'
                     data-typing={isHeroTitleTyping ? 'true' : 'false'}
                   >
                     {typedHeroTitleMain || '\u00a0'}
-                  </strong>
-                </h1>
+                  </span>
+                </p>
 
-                <div className='home-premium__url-box home-reveal' style={{ '--delay': '180ms' }}>
-                  <div className='home-premium__url-label'>BASE URL</div>
-                  <Input
-                    readonly
-                    value={serverAddress}
-                    className='home-premium__input'
-                    size={isMobile ? 'default' : 'large'}
-                    suffix={
-                      <div className='home-premium__url-suffix'>
-                        <ScrollList
-                          bodyHeight={32}
-                          style={{ border: 'unset', boxShadow: 'unset' }}
-                        >
-                          <ScrollItem
-                            mode='wheel'
-                            cycled={true}
-                            list={endpointItems}
-                            selectedIndex={endpointIndex}
-                            onSelect={({ index }) => setEndpointIndex(index)}
-                          />
-                        </ScrollList>
-                        <Button
-                          type='primary'
-                          onClick={handleCopyBaseURL}
-                          className='home-copy-btn'
-                        >
-                          start
-                        </Button>
-                      </div>
-                    }
-                  />
-                </div>
-
-                <div className='home-premium__actions home-reveal' style={{ '--delay': '260ms' }}>
+                <div className='home-premium__actions home-reveal' style={{ '--delay': '180ms' }}>
                   <Link to='/token' reloadDocument>
                     <Button
                       theme='solid'
                       type='primary'
                       size={isMobile ? 'default' : 'large'}
                       className='home-btn home-btn--primary'
-                      icon={<IconPlay />}
+                      icon={<IconSend />}
                     >
-                      {t('立即开始')}
+                      {t('开始创作')}
                     </Button>
                   </Link>
                   {isDemoSiteMode && statusState?.status?.version ? (
@@ -336,38 +471,15 @@ const Home = () => {
                       <Button
                         size={isMobile ? 'default' : 'large'}
                         className='home-btn home-btn--ghost'
-                        icon={<IconFile />}
+                        icon={<IconBookOpenStroked />}
                         onClick={() => window.open(docsLink, '_blank')}
                       >
-                        {t('使用文档')}
+                        {t('使用教程')}
                       </Button>
                     )
                   )}
                 </div>
 
-                <section
-                  className='home-premium__reviews home-reveal'
-                  style={{ '--delay': '320ms' }}
-                  aria-label='user-reviews'
-                >
-                  {reviewBarrageRows.map((row, rowIndex) => (
-                    <div
-                      key={`review-row-${rowIndex}`}
-                      className={`home-premium__reviews-row ${rowIndex % 2 === 1 ? 'home-premium__reviews-row--reverse' : ''}`}
-                    >
-                      <div className='home-premium__reviews-track'>
-                        {[...row, ...row].map((review, index) => (
-                          <span
-                            key={`review-${rowIndex}-${index}`}
-                            className='home-premium__review-pill'
-                          >
-                            {review}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </section>
               </div>
             </section>
           </div>
